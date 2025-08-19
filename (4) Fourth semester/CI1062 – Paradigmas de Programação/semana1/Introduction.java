@@ -1,28 +1,28 @@
 import java.util.Scanner;
 
 
-public class Introducao {
+public class Introduction {
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String args[]) {
         int option;
 
         while (true) {
-            option = this.scanner.nextInt();
+            option = scanner.nextInt();
 
             switch (option) {
                 case 1:
-                    this.oddEven(this.scanner.nextInt());
+                    oddEven(scanner.nextInt());
                     break;
                 case 2:
-                    this.sumMultipleOfThree();
+                    sumMultipleOfThree();
                     break;
                 case 3:
-                    int result = this.mathFunction(this.scanner.nextInt());
+                    int result = mathFunction(scanner.nextInt());
                     System.out.println("The function result was: " + result);                    
                     break;
                 case 4:
-                    this.imc();
+                    imc();
                     break;
                 default:
                     System.exit(0);
@@ -30,14 +30,14 @@ public class Introducao {
         }   
     }
 
-    private void oddEven(int x) {
+    private static void oddEven(int x) {
         if ((x % 2) == 0)
             {System.out.println("Its Even");}
         else
             {System.out.println("Its Odd");}
     }
 
-    private void sumMultipleOfThree() {
+    private static void sumMultipleOfThree() {
         int sum = 0;
         for (int i = 1; i <= 10; i++) {
             sum += i * 3;
@@ -46,9 +46,9 @@ public class Introducao {
         System.out.println("The sum is " + sum);
     }
 
-    private int mathFunction(int x) {
+    private static int mathFunction(int x) {
         if (x < 0) {
-            throw new IllegalArgumentException;
+            throw new IllegalArgumentException();
         }
 
         if (x < 5)
@@ -60,25 +60,25 @@ public class Introducao {
         return x - 3;
     }
 
-    private void imc() {
+    private static void imc() {
         double weight;
         double height;
         int count = 0;
 
-        weight = this.scanner.nextDouble();
-        height = this.scanner.nextDouble();
+        weight = scanner.nextDouble();
+        height = scanner.nextDouble();
 
         while (weight != -1 && height != -1) {
             double formulaResult = weight / (height * height);
-            boolean formulaResult = formulaResult > 25;  
+            boolean isAboveWeight = formulaResult > 25;  
         
             if (isAboveWeight) {
                 count += 1;
                 System.out.println("There is a total of " + count + " people abovoe weight");
             }
 
-            weight = this.scanner.nextDouble();
-            height = this.scanner.nextDouble();
+            weight = scanner.nextDouble();
+            height = scanner.nextDouble();
         }
     }
 }
