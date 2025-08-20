@@ -11,22 +11,42 @@ public class Time {
     }
 
     public void setHours(int hours) {
-        this.hours = hours;
+        if (hours >= 0 && hours <= 24)
+            {this.hours = hours;}
     }
 
     public void setMinutes(int minutes) {
-        this.minutes = minutes;
+        if (minutes >= 0 && minutes <= 60)
+            {this.minutes = minutes;}
     }
 
-    // public boolean anterior() {
-    // }
-    // public boolean posterior() {
+    public boolean anterior(int h, int m) {
+        if (!posterior(h, m) && !equals(h, m)) {
+            return true;
+        }
 
-    // }
-    // public boolean equals() {
-
-    // }
+        return false;
+    }
     
+    public boolean posterior(int h, int m) {
+        if (h > this.getHours() || this.equals(h, m) && m > this.getMinutes()) {
+            return true;
+        }
+    
+        return false;
+    }
+    
+    public boolean equals(int h, int m) {
+        if (h == this.getHours() && m == this.getMinutes()) {
+            return true;
+        }
 
+        return false;
+    }
 
+    @Override
+    public String toString() {
+        return getClass().getName() + " " +
+            this.getHours() + ":" + this.getMinutes();
+    }
 }

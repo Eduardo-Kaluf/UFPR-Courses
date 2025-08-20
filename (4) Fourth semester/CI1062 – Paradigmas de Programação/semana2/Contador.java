@@ -24,4 +24,6 @@ public class Contador {
     }
 }
 
-// Classes como Lista... 
+// Classes that could use a Counter:
+// Lists, Sets, any class that iterates, any class that needs to establish a limit
+ 

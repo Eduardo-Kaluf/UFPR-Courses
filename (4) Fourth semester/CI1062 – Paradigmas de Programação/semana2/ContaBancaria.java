@@ -1,29 +1,50 @@
 public class ContaBancaria {
     private String nome;
-    private float saldo;
-    private float limite;
+    private double saldo;
+    private double limite;
 
     public void setNome(String nome) {
-        this.nome = nome;
+        if (nome != null) 
+            {this.nome = nome;}
     }
 
-    public void setSaldo(float saldo) {
-        this.saldo = saldo;
+    public void setSaldo(double saldo) {
+        if (saldo >= 0)
+            {this.saldo = saldo;}
     }
 
-    public void setLimite(float limite) {
-        this.limite = limite;
+    public void setLimite(double limite) {
+        if (limite <= saldo)
+            {this.limite = limite;}
     }
 
     public String getNome() {
         return this.nome;
     }
 
-    public float getSaldo() {
+    public double getSaldo() {
         return this.saldo;
     }
 
-    public float getLimite() {
+    public double getLimite() {
         return this.limite;
+    }
+
+    public void depositar(double quantia) {
+        if (quantia > 0) {
+            this.setSaldo(quantia + this.getSaldo());
+            this.setLimite(this.getSaldo());
+        }
+    }
+
+    public double sacar(double quantia) {
+        if ((quantia > 0) && (quantia <= this.getLimite())) {
+            this.setSaldo(this.getSaldo() - quantia);
+            this.setLimite(this.getSaldo());
+
+            return quantia;
+        }
+
+        return 0.0;
     }
 }
