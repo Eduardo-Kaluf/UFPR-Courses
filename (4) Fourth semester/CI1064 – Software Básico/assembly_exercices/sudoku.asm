@@ -98,11 +98,13 @@ _LOOP1:
     cmp r8, r10
     jge _OUT1
 
+    push rdx
     mov rax, rsi
     mov rbx, r10
     mul rbx
     add rax, r8
     cmp [rdi + rax * 8], rcx
+    pop rdx
     jne _FALSE1
     mov rax, 0
     jmp _isSafe_RET
@@ -118,7 +120,9 @@ _LOOP2:
 
     mov rax, r8
     mov rbx, r10
+    push rdx
     mul rbx
+    pop rdx
     add rax, rdx
     cmp [rdi + rax * 8], rcx
     jne _FALSE2
@@ -159,7 +163,9 @@ LOOP_J:
     mov rax, r8
     add rax, r11
     mov rbx, r10
+    push rdx
     mul rbx
+    pop rdx
     mov rbx, r9
     add rbx, r12
     add rax, rbx
@@ -203,7 +209,9 @@ _LOOP_COL:
 
     mov rax, r13
     mov rbx, r10
+    push rdx
     mul rbx
+    pop rdx
     add rax, r14
     cmp qword [rdi + rax * 8], 0
     jne _CONTINUE2
@@ -238,7 +246,9 @@ _LOOP_NUM:
 
     mov rax, r13
     mov rbx, r10
+    push rdx
     mul rbx
+    pop rdx
     add rax, r14
     mov [rdi + rax * 8], r15
 
@@ -252,7 +262,9 @@ _LOOP_NUM:
 _FALSE_SOLVE_SUDOKU:
     mov rax, r13
     mov rbx, r10
+    push rdx
     mul rbx
+    pop rdx
     add rax, r14
     mov qword [rdi + rax * 8], 0
 
