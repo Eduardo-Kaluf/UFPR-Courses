@@ -1,0 +1,32 @@
+Avaliador
+Eduardo Kaluf GRR20241770
+
+Sistema avaliado
+O sistema avalido foi o SouUFPR (https://sou.ufpr.br/home)
+
+Técnica aplicada
+Oito Regras de Ouro de Ben Shneiderman
+
+Tempo de avaliação
+O tempo total de avaliação levou aproximadamente 1 hora e 30 minutos
+
+Total de problemas encontrados
+Foram encontrados e documentados um total de 10 problemas.
+
+
+Apreciação geral da qualidade do sistema
+
+O aplicativo SouUFPR parte de uma premissa: centralizar e simplificar o acesso à informação acadêmica para os estudantes, a intenção de agrupar o essencial da vida universitária em um único portal é ótima. No entanto, uma análise mais aprofundada, baseada em princípios de design e usabilidade, focando em específico nas "Oito Regras de Ouro"), revela que a execução atual apresenta lacunas significativas, problemas e um enorme espaço para melhorias.
+O ponto mais crítico é a acessibilidade. Atualmente, o aplicativo não pode ser considerado acessível, apresentando barreiras consideráveis para usuários com deficiências visuais, como daltonismo ou baixa visão. A experiência de uso para esse público é severamente comprometida pela falta de suporte adequado a leitores de tela e pela ausência de opções de contraste configurável, tornando o acesso à informação impraticável.
+Para os usuários que não necessitam de recursos de acessibilidade, embora consiga utilizar o aplicativo, ele é falho em quesitos de eficiência e efetividade. Muitas ações exigem mais cliques do que o necessário, e o fluxo de navegação é frequentemente interrompido por redirecionamentos que não fazem sentido dentro do contexto de uso, prejudicando a produtividade e fluxo de uso, gerando frustração e descontentamento.
+A intuitividade e a flexibilidade do sistema também são deficientes. A experiência do usuário é confusa e engessada, marcada por ícones que levam a páginas sem conteúdo, notícias desatualizadas e a ausência de mecanismos básicos em diversas das páginas, como botões para "desfazer" ações ou para retornar a última rota. A página inicial é um exemplo claro, dos oito botões de navegação, metade não possui uma descrição de texto, forçando o usuário a adivinhar a função de cada um apenas pelo ícone. São esses pequenos detalhes que, acumulados, resultam em uma usabilidade universal de baixa qualidade.
+Sendo assim, é possível concluir que o SouUFPR, em seu estado atual, deixa a desejar em diversos itens de acessibilidade e otimização da experiência do usuário. É fundamental, contudo, ter em vista que o software ainda está em fase de desenvolvimento inicial (BETA). Muitos desses problemas são comuns em estágios iniciais, e embora a acessibilidade deva ser uma preocupação contínua, é natural que certos blocos base precisem ser estabelecidos primeiro. O projeto parece estar nessa fase, mas é preciso reconhecer que há um longo caminho a percorrer para tornar o aplicativo verdadeiramente universal e democrático para todos os estudantes.
+
+
+Apreciação sobre a capacidade da técnica de revelar problemas
+
+A principal vantagem das Oito Regras de Ouro é a sua capacidade de fornecer um framework estruturado para a avaliação da usabilidade focando no usuário "ótimo". Elas foram extremamente úteis para direcionar a análise, ajudando a identificar com precisão quais características da interface procurar por problemas e mais do que apenas apontar falhas, os princípios de Shneiderman também são uma boa base de caminhos para a solução, focando na eficiência, praticidade e consistência da interação. A maior desvantagem econtrada na técnica é a sua cobertura limitada sobre a questão de acessibilidade. Foi possível observar que problemas puramente de acessibilidade (como leitores de tela ou contraste de cores adequado) não se enquadram diretamente ou de forma óbvia em nenhuma das oito regras. A técnica deixa a desejar nesse aspecto, focando muito mais na experiência do usuário "padrão" do que em uma análise que visa garantir inclusão.
+
+Esta técnica é ideal para avaliar a qualidade da usabilidade e a eficiência do fluxo de interação de um sistema. É excelente para otimizar interfaces, reduzir a carga cognitiva do usuário e garantir que o design seja consistente e previsível. Porém a técnica é inadequada quando utilizada como a única ferramenta para uma auditoria de acessibilidade. Se o propósito for garantir que uma aplicação seja plenamente acessível, as regras de Shneiderman são insuficientes, pois suas diretrizes não foram formuladas com esse foco principal.
+
+Sendo assim, concluimos que As Oito Regras de Ouro são uma ferramenta poderosa para avaliar a usabilidade, mas não a acessibilidade. Para o desenvolvimento de um sistema robusto, uma ótima abordagem seria utilizar esta técnica em conjunto com um framework focado em inclusão, como os princípios do Design Universal. Essa combinação garantiria um guia para uma aplicação ao mesmo tempo intuitiva, eficiente e acessível.
