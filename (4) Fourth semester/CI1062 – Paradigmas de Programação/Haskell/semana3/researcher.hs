@@ -49,6 +49,7 @@ cont t g
     | t == "mestre" = contMestre 5 g
     | t == "doutor" = contDoutor 5 g
 
+
 main :: IO ()
 main = do
     putStrLn (show (cont "doutor" 'm'))
