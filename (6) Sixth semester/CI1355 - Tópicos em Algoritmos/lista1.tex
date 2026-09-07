@@ -1,0 +1,276 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+
+\setlist[enumerate]{leftmargin=*}
+
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Gen}{\mathsf{Gen}}
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\ilegivel}[1]{\textit{[ilegível: #1]}}
+\newcommand{\defeq}{\stackrel{\text{\tiny def}}{=}}
+
+\title{Lista 1 \\ EDUARDO KALUF - GRR20241770 \\ PEDRO TAKEO SHIMA - GRR20240627}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+%======================================================================
+\section*{Questão 1}
+%======================================================================
+
+\subsection*{a) ``Prove que se apenas um caractere é cifrado, então a cifra de César é perfeitamente secreta.``}
+
+Vamos provar que se apenas um caractere é cifrado, então a cifra de César é perfeitamente secreta.
+
+Primeiro, devemos descobrir qual a $\Pr$ de uma dada mensagem $m$ ser cifrada para $c$:
+
+\begin{quote}
+    Sabemos que ${\mathsf{Enc}}$ é definido da seguinte maneira:
+    \[
+    \Enc \;\rightsquigarrow\; m + k \equiv c \pmod{26}
+    \]
+    \[
+    k \equiv c - m \pmod{26}
+    \]
+
+    Como existe apenas uma chave $k$ que satisfaça a equação anterior e o espaço total de chaves $|\mathcal{K}| = 26$, temos que a
+    probabilidade de uma mensagem $m$ ser cifrada para $c$ é a seguinte:
+
+    \[
+    \Pr[C=c \mid M=m] = \frac{1}{26}
+    \]
+\end{quote}
+
+Agora, pela Lei da Probabilidade Total conseguimos descobrir a ${\Pr[C=c]}$:
+
+\[
+\Pr[C=c] \;=\; \sum_{m \in \mathcal{M}} \Pr[C=c \mid M=m]\cdot \Pr[M=m]
+\]
+\[
+\Pr[C=c] \;=\; \frac{1}{26}\sum_{m \in \mathcal{M}} \Pr[M=m]
+\]
+\[
+\Pr[C=c] \;=\; \frac{1}{26}
+\]
+Dessa forma, pelo Teorema de Bayes:
+
+\[
+    \Pr[M=m \mid C=c] \;=\; \frac{\Pr[C=c \mid M=m]\cdot \Pr[M=m]}{\Pr[C=c]}
+\]
+
+\[
+\Pr[M=m \mid C=c] \;=\; \frac{\frac{1}{26}\cdot \Pr[M=m]}{\frac{1}{26}}
+\]
+
+\[
+\Pr[M=m \mid C=c] \;=\; \Pr[M=m]
+\]
+
+Ou seja, concluimos que se apenas um caractere é cifrado então a Cifra de César é perfeitamente secreta.
+
+\clearpage
+
+\subsection*{b) ``A cifra mono-alfabética é perfeitamente secreta para mensagens com dois caracteres? Justifique sua resposta.''}
+
+Não, pois cada uma das letras do alfabeto é mapeada a apenas uma única outra letra.
+Dessa forma, ao ver uma mensagem cifrada com caracteres repetidos (em sequência ou não) sabemos que esses caracteres na mensagem original devem ser todos
+iguais a uma das $26$ letras do alfabeto.
+
+Isso mostra que:
+\[
+\Pr[M=m \mid C=c] \;\neq\; \Pr[M=m]
+\]
+
+Veja um contra exemplo:
+
+Assumindo que todas as mensagens $m$ têm a mesma probabilidade, ao ver uma mensagem cifrada:
+
+\[
+    c = \text{``oo''}
+\]
+
+Ela torna a Probabilidade:
+
+\[
+\Pr[M=m'] = 0.
+\]
+
+Onde $m'$ é uma mensagem qualquer com o primeiro carácter diferente do segundo.
+
+\subsection*{c) ``Prove que a cifra de Vigenère usando período fixo t é perfeitamente secreta quando
+usada para cifrar mensagens de tamanho t.``}
+
+A escolha de chave por $\Gen$ é feita de maneira uniforme:
+\[
+\Pr[K=k] = \frac{1}{|\mathcal{K}|}
+\]
+
+Veja que neste caso, cada letra da mensagem é uma cifra de César de tamanho $1$, seguindo a propriedade que vimos no exercício 1.a:
+
+\[
+k^{'} = m^{'} - c^{'} \pmod{26}
+\]
+
+Isso vale para cada um dos caracteres da mensagem, ou seja, podemos aplicar o raciocínio do exercício 1.a para cada um dos
+caracteres da mensagem, generalizando:
+
+\[
+\forall\, m \in \mathcal{M} \ \text{ e } \ c \in \mathcal{C}
+\quad \exists!\, k \in \mathcal{K} \ \text{ t.q. } \ \Enc_k(m) = c
+\]
+
+Sabendo que:
+
+\[
+    |\mathcal{M}| = 26^{t} \qquad |\mathcal{C}| = 26^{t} \qquad |\mathcal{K}| = 26^{t}
+\]
+
+Então, pelo Teorema de Shannon, Vigenère é perfeitamente secreto para este caso.
+
+\clearpage
+%======================================================================
+\section*{Questão 2 --- ``Para cada função abaixo, indique se a função é
+negligenciável ou não, e justifique sua resposta''}
+%======================================================================
+
+\subsection*{a) $f(n) = 2^{-n/2}$}
+
+É negligenciável. Veja:
+
+\begin{gather*}
+    \frac{1}{2^{n/2}} < \frac{1}{n^{c}} \;\rightsquigarrow\; 2^{n/2} > n^{c} \\ \\
+    \sqrt{2^{n}} > n^{c} \;\rightsquigarrow\; 2^{n} > n^{2c}
+\end{gather*}
+
+Que vale para todo $n$ suficientemente grande, qualquer que seja $c$.
+
+\subsection*{b) $f(n) = n^{-100}$}
+
+Não é negligenciável. Veja:
+
+\begin{gather*}
+    \frac{1}{n^{100}} < \frac{1}{n^{c}} \;\rightsquigarrow\; n^{100} > n^{c}; \\ \\
+    \text{tome } c = 101 \;\rightsquigarrow\; n^{100} > n^{101} \\ \\
+    1 > n
+\end{gather*}
+
+O que é falso para todo $n \geq 1$.
+Logo existe $c$ para o qual a desigualdade
+nunca vale.
+
+\subsection*{c) $f(n) = 2^{-\log^{3} n}$}
+
+É negligenciável. Veja:
+
+\begin{gather*}
+    \frac{1}{2^{\log^{3} n}} < \frac{1}{n^{c}} \;\rightsquigarrow\; 2^{\log^{3} n} > n^{c} \\ \\
+    \log\!\left(2^{\log^{3} n}\right) > \log\!\left(n^{c}\right) \;\rightsquigarrow\; \log^{3} n > c \log n \\ \\
+    \log^{2} n > c,\\
+\end{gather*}
+
+Que vale para todo $n$ suficientemente grande, qualquer que seja $c$.
+
+\clearpage
+
+%======================================================================
+\section*{Questão 3 --- ``Seja $G$ um gerador pseudoaleatório com fator de
+expansão $\ell(n) > 2n$. Para cada construção abaixo, indique se a construção é
+ou não um gerador pseudoaleatório, e justifique sua resposta. A seguir, $\|$
+    denota concatenação e $\overline{x}$ denota o complemento da string $x$, onde
+    cada bit é trocado pelo bit oposto.''}
+%======================================================================
+
+\subsection*{a) $G_1(s) \defeq G(s) \,\|\, \overline{G(s)}$, onde
+    $s \in \{0,1\}^{n}$}
+
+Considere $D$ o distinguidor que: responde $1$ caso a primeira metade da string seja o complemento da segunda, e
+$0$ caso contrário.
+
+Se $D$ recebe uma string pseudoaleatória, então sempre a primeira metade será o
+complemento da segunda, logo $\Pr[D(G_1(s)) = 1] = 1$.
+
+Se $D$ recebe uma string aleatória, então a primeira e a segunda metade são
+complementos em somente $\frac{1}{2^{\ell(n)}}$ dos casos, logo
+$\Pr[D(r) = 1] = \frac{1}{2^{\ell(n)}}$.
+
+Dessa forma, como:
+\[
+    \bigl|\Pr[D(G_1(s)) = 1] - \Pr[D(r) = 1]\bigr|
+    \;=\; 1 - \frac{1}{2^{\ell(n)}},
+\]
+Não é negligenciável, então $G_1$ não é um Gerador Pseudoaleatório.
+
+\subsection*{b) $G_2(s_1,\ldots,s_n,s_{n+1},\ldots,s_{2n})
+\defeq G(s_1,\ldots,s_n)$}
+
+Sabendo que $G$ é um Gerador Pseudoaleatório, a construção $G_2$ também deve ser, pois a única
+coisa ação de $G_2$ é repassar metade de sua entrada para $G$. $G$ Então gera uma saída pseudoaleatória
+que continua satisfazendo a expansão: $|s| = 2n$ bits e a saída de $G$ tem $\ell(n) > 2n$ bits,
+logo $s$ é expandida.
+
+Vamos provar por contradição, veja:
+
+Suponha que $G_2$ não é um GPA\@.
+
+Então $\exists\ $ um distinguidor $D$ t.q.
+\[
+    \bigl|\Pr[D(G_2(s)) = 1] - \Pr[D(r) = 1]\bigr| \;>\; \negl(n),
+    \qquad s, r \leftarrow \{0,1\}^{2n}.
+\]
+
+Sendo assim, esse mesmo $D$ consegue distinguir $G$, basta que ele receba de entrada
+os $n$ primeiros bits de $s$, então:
+\[
+    \bigl|\Pr[D(G(s')) = 1] - \Pr[D(r) = 1]\bigr| \;>\; \negl(n),
+    \qquad s', r \leftarrow \{0,1\}^{n}.
+\]
+
+Chegamos a uma contradição, pois sabemos que $G$ de fato é um GPA. Logo $G_2$ também deve ser.
+
+\clearpage
+
+\subsection*{c) $G_3(s) \defeq G(0^{n} \,\|\, s)$, onde
+    $s \in \{0,1\}^{n}$}
+
+Seja $H$ um GPA com fator de expansão $\ell_H(n) > 4n$ e $s \in \{0,1\}^{2n}$,
+dessa forma defina $G$ da seguinte maneira:
+\[
+    G(s_1,\ldots,s_n,s_{n+1},\ldots,s_{2n}) \defeq H(s_1,\ldots,s_n).
+\]
+Pelo item (b), $G$ é um GPA, e seu fator de expansão satisfaz a hipótese do
+enunciado (em que $\ell_H(n) > 4n > 2n$).
+
+Agora aplicando essa construção em $G_3$:
+\[
+    G_3(s) = G(0^{n} \,\|\, s) = H(0^{n}),
+\]
+Temos que $H$ receberá apenas os zeros gerados pela entrada, 
+pois os bits de $s$ ocupam exatamente as posições $s_{n+1},\ldots,s_{2n}$, descartadas por $H$.
+
+Dessa forma, $G_3$ não é GPA, pois seu resultado é o mesmo
+$\forall\, s \in \{0,1\}^{n}$. 
+Em outras palavras, temos um distinguidor $D$ que computa $H(0^{n})$ e responde $1$ se e 
+somente se a entrada é igual a essa string, ou seja:
+
+Se $D$ recebe uma string pseudoaleatória, então ela sempre será o valor de
+$H(0^{n})$, logo $\Pr[D(G_3(s)) = 1] = 1$.
+
+Se $D$ recebe uma string aleatória, então a probabilidade dela ser a string
+gerada por $H(0^{n})$ é $\frac{1}{2^{\ell_H(n)}}$.
+
+Como
+\[
+    \bigl|\Pr[D(G_3(s)) = 1] - \Pr[D(r) = 1]\bigr|
+    \;=\; 1 - \frac{1}{2^{\ell_H(n)}},
+\]
+Essa vantagem não é negligenciável, portanto $G_3(s)$ não é um gerador pseudoaleatório.
+
+\end{document}
