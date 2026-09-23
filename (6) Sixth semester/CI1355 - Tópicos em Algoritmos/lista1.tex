@@ -6,6 +6,8 @@
 \usepackage{amsmath,amssymb}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
 \setlist[enumerate]{leftmargin=*}
 
@@ -14,6 +16,9 @@
 \newcommand{\negl}{\mathsf{negl}}
 \newcommand{\ilegivel}[1]{\textit{[ilegível: #1]}}
 \newcommand{\defeq}{\stackrel{\text{\tiny def}}{=}}
+\newcommand{\PrivKcpaI}[3]{\mathsf{PrivK}^{\mathrm{cpa}\text{-}1}_{#1,#2}(#3)}
+\newcommand{\PrivKcpa}[3]{\mathsf{PrivK}^{\mathrm{cpa}}_{#1,#2}(#3)}
+\newcommand{\PrivKbit}[3]{\mathsf{PrivK}^{\mathrm{cpa}\text{-}1}_{#1,#2}(#3)}
 
 \title{Lista 1 \\ EDUARDO KALUF - GRR20241770 \\ PEDRO TAKEO SHIMA - GRR20240627}
 \author{}
@@ -150,21 +155,26 @@ negligenciável ou não, e justifique sua resposta''}
     \sqrt{2^{n}} > n^{c} \;\rightsquigarrow\; 2^{n} > n^{2c}
 \end{gather*}
 
-Que vale para todo $n$ suficientemente grande, qualquer que seja $c$.
+Que vale para todo $n$ suficientemente grande, qualquer que seja $c$, pois funções exponenciais
+crescem assintoticamente mais rápido que polinomiais.
 
 \subsection*{b) $f(n) = n^{-100}$}
 
 Não é negligenciável. Veja:
 
 \begin{gather*}
-    \frac{1}{n^{100}} < \frac{1}{n^{c}} \;\rightsquigarrow\; n^{100} > n^{c}; \\ \\
-    \text{tome } c = 101 \;\rightsquigarrow\; n^{100} > n^{101} \\ \\
-    1 > n
+    \frac{1}{n^{100}} < \frac{1}{n^{c}} \;\rightsquigarrow\; n^{100} > n^{c};
 \end{gather*}
 
-O que é falso para todo $n \geq 1$.
-Logo existe $c$ para o qual a desigualdade
-nunca vale.
+Tomando c = 101 a desigualdade se torna:
+
+\[
+    n^{101} < n^{100}
+    \;\rightsquigarrow\; n < 1,
+\]
+
+Que é falsa para todo $n \geq 1$.
+Logo existe $c$ para o qual a desigualdade nunca vale.
 
 \subsection*{c) $f(n) = 2^{-\log^{3} n}$}
 
@@ -173,7 +183,7 @@ nunca vale.
 \begin{gather*}
     \frac{1}{2^{\log^{3} n}} < \frac{1}{n^{c}} \;\rightsquigarrow\; 2^{\log^{3} n} > n^{c} \\ \\
     \log\!\left(2^{\log^{3} n}\right) > \log\!\left(n^{c}\right) \;\rightsquigarrow\; \log^{3} n > c \log n \\ \\
-    \log^{2} n > c,\\
+    \log^{2} n > c\\
 \end{gather*}
 
 Que vale para todo $n$ suficientemente grande, qualquer que seja $c$.
@@ -272,5 +282,104 @@ Como
     \;=\; 1 - \frac{1}{2^{\ell_H(n)}},
 \]
 Essa vantagem não é negligenciável, portanto $G_3(s)$ não é um gerador pseudoaleatório.
+
+\clearpage
+
+%======================================================================
+\section*{Questão 4 --- ``Prove que, se $\Pi$ é uma cifra CPA-segura, então vale que, para todo algoritmo
+probabilístico polinomial $\mathcal{A}$ e $i \in \{1, 2, \dots, n\}$, existe uma
+função negligenciável $\negl$ tal que, para todo $n$,
+    \[
+        \Pr\!\left[\PrivKcpaI{\mathcal{A}}{\Pi}{n,i} = 1\right]
+        \le \frac{1}{2} + \negl(n),
+    \]
+    onde a probabilidade é sobre a aleatoriedade do desafiante (para amostrar $k$ e
+    também a mensagem $m$) e a aleatoriedade de $\mathcal{A}$.''}
+%======================================================================
+
+    Para provar isto, vamos utilizar uma redução $\mathcal{A}'$ que tenta quebrar $\Pi$ no
+    experimento $\PrivKcpa{\mathcal{A}'}{\Pi}{n}$, usando como sub-rotina um
+    adversário $\mathcal{A}$ no experimento $\PrivKbit{\mathcal{A}}{\Pi}{n,i}$.
+
+    \begin{center}
+        \resizebox{\textwidth}{!}{%
+            \begin{tikzpicture}[
+        >={Stealth[length=2mm]},
+        font=\small,
+        ator/.style={draw,rounded corners=2pt,fill=gray!12,
+        minimum width=4cm,minimum height=8cm},
+        nome/.style={anchor=north,font=\small},
+        msg/.style={midway,above=1pt,font=\footnotesize,inner sep=1pt}
+    ]
+
+        %% Posições
+        \def\xD{2}
+        \def\xRl{7}
+        \def\xRr{11}
+        \def\xA{16}
+
+        %% Bloquinhos
+        \node[ator] (D) at (0,0) {};
+        \node[nome] at ([yshift=-10pt]D.north) {Desafiante};
+
+        \node[ator,fill=blue!4] (R) at (9,0) {};
+        \node[nome] at ([yshift=-10pt]R.north) {Redução $\mathcal{A}'$};
+
+        \node[ator] (A) at (18,0) {};
+        \node[nome] at ([yshift=-10pt]A.north) {Adversário $\mathcal{A}$};
+
+        %% Desafiante <-> Redução
+        \draw[->]  (5,3)    -- node[msg] {$k \leftarrow \mathrm{Gen}(1^n)$} (\xD,3);
+        \draw[->]  (\xRl,2) -- node[msg] {$m_0,m_1\in\mathcal{M}$ com $|m_0|=|m_1|$} (\xD,2);
+        \draw[->]  (5,1)    -- node[msg] {$b \leftarrow \{0,1\}$} (\xD,1);
+        \draw[->]  (\xD,0)  -- node[msg] {$c \leftarrow \mathrm{Enc}_k(m_b)$} (\xRl,0);
+        \draw[<->] (\xD,-1) -- node[msg] {consultas $\mathrm{Enc}_k(\cdot)$} (\xRl,-1);
+        \draw[->]  (\xRl,-3)-- node[msg] {$b' = b_i$} (\xD,-3);
+
+        %% Redução <-> Adversário
+        \draw[->]  (\xRr,0) -- node[msg] {$c \leftarrow \mathrm{Enc}_k(m_b)$} (\xA,0);
+        \draw[<->] (\xRr,-1)-- node[msg] {loop: $\mathrm{Enc}_k(m)$} (\xA,-1);
+        \draw[->]  (\xA,-2) -- node[msg] {$b_i =$ chute para $m_b^i$} (\xRr,-2);
+    \end{tikzpicture}}
+    \end{center}
+
+    \textbf{$^1$Vale ressaltar que o adversário $\mathcal{A}$ pode consultar o oráculo
+    $\mathrm{Enc}_k(\cdot)$ em qualquer momento do experimento. A representação única no desenho
+    foi feita apenas para economizar espaço.}
+
+    Definindo que $m_0$ deve ter o $i$-ésimo bit igual a $0$ e $m_1$ deve ter o
+    $i$-ésimo bit igual a $1$, temos que o $i$-ésimo bit de $m_b$ é exatamente $b$.
+    Dessa forma, $b'$ pode ser exatamente o chute do adversário $\mathcal{A}$ ($b' = b_i$).
+
+    Com isso, $b' = b$ se e somente se $b_i$ é igual ao i-ésimo bit de $m_b$, que é o mesmo que dizer que
+    $\mathcal{A}'$ vence o seu experimento sempre que $\mathcal{A}$ acerta o $i$-ésimo bit.
+
+    Sendo assim, como $b$, $m_0$ e $m_1$ são sorteados uniformemente dentro
+    dos conjuntos das mensagens com $i$-ésimo bit $0$ e $1$, o texto cifrado enviado
+    para o adversário é distribuído como se $m_b$ fosse apenas uma mensagem uniforme.
+
+    Sabendo disso, podemos afirmar que:
+    \[
+        \Pr\!\left[\PrivKcpa{\mathcal{A}'}{\Pi}{n} = 1\right]
+        \;=\;
+        \Pr\!\left[\PrivKbit{\mathcal{A}}{\Pi}{n,i} = 1\right].
+    \]
+
+    Como assumimos que $\Pi$ é uma cifra CPA-segura, e $\mathcal{A}'$ é um algoritmo
+    probabilístico polinomial, existe uma função negligenciável $\negl$ tal que:
+    \[
+        \Pr\!\left[\PrivKcpa{\mathcal{A}'}{\Pi}{n} = 1\right]
+        \;\le\; \frac{1}{2} + \negl(n).
+    \]
+
+    Segue que:
+    \[
+        \Pr\!\left[\PrivKbit{\mathcal{A}}{\Pi}{n,i} = 1\right]
+        \;\le\; \frac{1}{2} + \negl(n),
+    \]
+
+    Portanto, provamos que em uma cifra $\Pi$ que é CPA-segura, nenhum adversário
+    eficiente $\mathcal{A}$ consegue recuperar sequer um bit de uma mensagem criptografada
+    pela cifra $\Pi$ com uma vantagem não-negligenciável.
 
 \end{document}
