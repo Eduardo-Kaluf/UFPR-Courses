@@ -2,11 +2,11 @@
 #include <omp.h>
 #include <time.h>
 
-static long num_steps = 100000000;
+static long num_steps = 100000;
 
 double step;
 
-#define NUM_T 100
+#define NUM_T 4
 double sumns[NUM_T];
 
 int main() {
