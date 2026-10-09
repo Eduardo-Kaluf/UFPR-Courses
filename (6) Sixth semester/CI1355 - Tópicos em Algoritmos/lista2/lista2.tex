@@ -1,0 +1,153 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\setlist[enumerate]{leftmargin=*}
+
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Dec}{\mathsf{Dec}}
+\newcommand{\Gen}{\mathsf{Gen}}
+\newcommand{\Mac}{\mathsf{Mac}}
+\newcommand{\Vrfy}{\mathsf{Vrfy}}
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\Ruim}{\mathsf{Ruim}}
+\newcommand{\Repete}{\mathsf{Repete}}
+\newcommand{\ilegivel}[1]{\textit{[ilegível: #1]}}
+\newcommand{\defeq}{\stackrel{\text{\tiny def}}{=}}
+\newcommand{\PrivKcpaI}[3]{\mathsf{PrivK}^{\mathrm{cpa}\text{-}1}_{#1,#2}(#3)}
+\newcommand{\PrivKcpa}[3]{\mathsf{PrivK}^{\mathrm{cpa}}_{#1,#2}(#3)}
+\newcommand{\PrivKbit}[3]{\mathsf{PrivK}^{\mathrm{cpa}\text{-}1}_{#1,#2}(#3)}
+\newcommand{\PrivKccaI}[3]{\mathsf{PrivK}^{\mathrm{cca}\text{-}1}_{#1,#2}(#3)}
+
+\title{Lista 2 \\ EDUARDO KALUF - GRR20241770 \\ PEDRO TAKEO SHIMA - GRR20240627}
+\author{}
+\date{}
+
+\begin{document}
+    \maketitle
+
+%======================================================================
+    \section*{Questão 1 --- ``Seja $F\colon \{0,1\}^{n} \times \{0,1\}^{n} \to \{0,1\}^{n}$
+        uma função pseudoaleatória (chaveada). Neste exercício, vamos mostrar que nenhum
+        adversário probabilístico polinomial $\mathcal{A}$ consegue encontrar dois valores
+        $x$ e $y$ tal que $F_k(x) = F_k(y)$ com probabilidade não-negligenciável.''}
+%======================================================================
+
+    \subsection*{a) ``Seja $\mathcal{A}$ um algoritmo de tempo polinomial $q(n)$ tal que
+        $\mathcal{A}^{\mathcal{O}(\cdot)}(1^{n}) = 1$ se e somente se $\mathcal{A}$ encontra
+        uma colisão na função $\mathcal{O}\colon \{0,1\}^{n} \to \{0,1\}^{n}$.
+        Argumente que, se $f\colon \{0,1\}^{n} \to \{0,1\}^{n}$ é uma
+        função aleatória, então:
+        \[
+            \Pr\!\left[\mathcal{A}^{f(\cdot)}(1^{n}) = 1\right] \le \frac{q(n)^{2}}{2^{n+1}}.\text{''}
+        \]
+    }
+
+% Resolução
+
+    \subsection*{b) ``Usando o fato de que $F$ é pseudoaleatória, conclua que existe uma
+    função negligenciável $\negl$ tal que
+        \[
+            \Pr\!\left[\mathcal{A}^{F_k(\cdot)}(1^{n}) = 1\right] \le \negl(n).\text{''}
+        \]}
+
+% Resolução
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 2 --- ``Prove que o modo de operação CTR não é CCA-seguro.''}
+%======================================================================
+
+% Resolução
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 3 --- ``(Exercício 4.1 do livro, adaptado) Considere um MAC
+        $\Pi = (\Gen, \Mac, \Vrfy)$ tal que, para uma chave $k \in \{0,1\}^{n}$, $\Mac_k$
+        sempre tem como saída uma tag de tamanho $c \cdot \log_2 n$, onde $c$ é uma
+        constante. Prove que $\Pi$ não pode ser um MAC seguro.''}
+%======================================================================
+
+% Resolução
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 4 --- ``Considere uma variação de segurança CCA (que chamamos de
+    segurança CCA-1) em que o adversário $\mathcal{A}$ só pode fazer consultas ao
+    oráculo de decifragem antes de enviar um par de mensagens para o desafiante.
+    Chamaremos este experimento de $\PrivKccaI{\mathcal{A}}{\Pi}{n}$. Neste exercício,
+        vamos provar que a Construção 3.30, além de CPA-segura, ainda é CCA-1-segura.''}
+%======================================================================
+
+    \subsection*{a)}
+
+    \begin{quote}
+        ``Seja $\tilde{\Pi}$ uma versão da cifra da Construção 3.30 onde se usa uma função
+        aleatória no lugar da função pseudoaleatória $F$. Fixe um adversário probabilístico
+        polinomial $\mathcal{A}$ e considere o experimento
+        $\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n}$. Defina $r^{*} \in \{0,1\}^{n}$ como a
+        string aleatória utilizada pelo desafiante para cifrar a mensagem de desafio $m_b$.
+        Por fim, defina o evento $\Ruim$ como a união de dois eventos $\Repete$ e
+        $\Repete'$, definidos a seguir:
+
+        \begin{itemize}
+            \item $\Repete$ é o evento de que, no experimento
+            $\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n}$, o desafiante usa $r^{*}$ como string
+            aleatória para cifrar alguma mensagem consultada por $\mathcal{A}$, antes ou
+            depois de $\mathcal{A}$ receber o texto cifrado de desafio do desafiante. Esse é
+            o mesmo evento considerado na demonstração da aula 10.
+            \item $\Repete'$ é o evento de que, no experimento
+            $\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n}$, o adversário envia para o desafiante
+            alguma consulta de decifragem do tipo $\langle r^{*}, \cdot \rangle$ antes de
+            receber o texto cifrado de desafio do desafiante.
+        \end{itemize}
+
+        Prove que $\Pr[\Ruim] \le \dfrac{q(n)}{2^{n-1}}$ e que
+        $\Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1 \mid \overline{\Ruim}\right]
+        = \dfrac{1}{2}$, onde $q(n)$ é um limite para o número de consultas de
+        cifragem/decifragem que $\mathcal{A}$ realiza. Conclua então que
+        \[
+            \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]
+            \le \frac{1}{2} + \frac{q(n)}{2^{n-1}}.\text{''}
+        \]
+    \end{quote}
+
+% Resolução
+
+    \subsection*{b)}
+
+    \begin{quote}
+        ``Usando o fato de que $F$ é uma função pseudoaleatória, prove que existe uma função
+        negligenciável $\negl$ tal que:
+        \[
+            \left|\,\Pr\!\left[\PrivKccaI{\mathcal{A}}{\Pi}{n} = 1\right]
+                - \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]\right|
+            \le \negl(n).
+        \]
+        Conclua então que a Construção 3.30 é CCA-1-segura.''
+    \end{quote}
+
+% Resolução
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 5 --- ``(Exercício 5.3 do livro, adaptado) Seja $(\Gen, H)$ uma
+    função hash resistente à colisões, e defina $(\Gen, \hat{H})$ como
+        $\hat{H}^{s}(x) \defeq H^{s}(H^{s}(x))$. A função $(\Gen, \hat{H})$ é também
+        resistente à colisões? Justifique sua resposta.''}
+%======================================================================
+
+% Resolução
+
+\end{document}
