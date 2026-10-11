@@ -1,0 +1,327 @@
+\chapter{Trabalhos Relacionados}\label{ch:related}
+
+O aumento incessante do número de núcleos por processador em conjunto com a crescente heterogeneidade dos hardwares utilizados
+acabam por expor limites e dores das arquiteturas dos sistemas operacionais monolíticos, onde um único kernel é responsável por
+fazer o manejo de todas as estruturas de dados e controle da máquina.
+Desde a década de 1990, uma linha de pesquisa propõe a alternativa de executar múltiplas instâncias de um mesmo kernel, ou
+subconjunto de kernels, com diferentes configurações em uma mesma máquina física, onde todos funcionam de forma parecida com um sistema distribuído.
+
+Essa maneira de tratar o SO hoje é conhecida como multikernel.
+Este capítulo apresenta os trabalhos correlatos estudados, mostrando a evolução da arquitetura multikernel e conectando outros
+trabalhos ao foco principal da pesquisa: desenvolver uma forma de orquestrar, monitorar e balancear cargas de trabalho
+entre diferentes nós que utilizam o sistema multikernel de maneira escalável e previsível.
+
+Este capítulo organiza os trabalhos correlatos em quatro seções.
+A Seção~\ref{sec:rel-multikernel} apresenta a evolução das arquiteturas com múltiplos kernels, desde o início com os sistemas para
+multiprocessadores de memória compartilhada até multikernels reduzidos utilizados em ambientes HPC.
+A Seção~\ref{sec:rel-orquestracao} discute como esses sistemas e orquestradores decidem a alocação de recursos
+e o balanceamento de carga dentro da própria arquitetura e em ambientes distribuídos.
+A Seção~\ref{sec:rel-observabilidade} aborda monitoramento, o qual é o critério para a tomada das decisões de orquestração.
+Já a Seção~\ref{sec:rel-disponibilidade} trata sobre isolamento e disponibilidade dessas instâncias e quais seus objetivos em geral.
+Por fim, a Seção~\ref{sec:sumario-e-trabalhos-revisados} sintetiza rapidamente tudo o que foi discutido.
+
+% ---------------------------------------------------------------------
+\section{Arquiteturas com múltiplos kernels}
+\label{sec:rel-multikernel}
+
+A ideia de estruturar o SO como um conjunto de kernels independentes surgiu há algumas décadas.
+O Hive \citep{chapin1995hive}, organiza o SO como um sistema distribuído interno de kernels, os quais são denominados células,
+cada uma delas é responsável por um conjunto fixo de nós e opera como um SO independente, enquanto
+cooperam para oferecer às aplicações uma imagem única e transparente de sistema.
+A comunicação entre células ocorre por meio de \textit{remote procedure calls} (RPC) e por leitura direta da memória de outras células.
+
+Em vez de reescrever o SO por completo, Disco \citep{bugnion1997disco} ataca o problema inserindo um pequeno monitor de máquinas virtuais
+que executa várias cópias de um SO na mesma máquina, comunicando-se por protocolos distribuídos comuns
+como NFS e TCP/IP.
+A abordagem permite executar sistemas operacionais especializados lado a lado com sistemas comerciais.
+
+O Cellular Disco \citep{govil2000cellular} estende a proposta dividindo o próprio monitor em partes menores, a fim de conter falhas
+de hardware, transformando o multiprocessador no que seria um cluster virtual.
+
+Já o sistema Corey \citep{boydwickizer2008corey} parte do princípio de que as aplicações devem ser responsáveis por controlar o compartilhamento.
+Por padrão, cada estrutura de dados do kernel é usada por um único núcleo, e abstrações como \textit{address ranges}, \textit{kernel cores}
+e \textit{shares} permitem à aplicação indicar explicitamente o que deve ser compartilhado.
+Por mais que execute um único kernel, o sistema Corey foi uma base importante para trabalhos futuros como Barrelfish.
+
+Enquanto isso, o FOS \citep{wentzlaff2009fos} propõe fatorar os serviços do SO em frotas de servidores distribuídos
+espacialmente pelos núcleos, permitindo a comunicação exclusivamente por mensagens, isso foi motivado pela constatação de que
+o alocador de páginas físicas do Linux não escalava para além de oito núcleos.
+Além disso, essa ideia da comunicação forte por mensagens obteve grande aceitação por futuras propostas de multikernels como
+a implementação em \citep{wang2025multikernel} feita a partir do kernel do linux.
+
+A formulação moderna do conceito é apresentada por \citet{baumann2009multikernel}, que propõem tratar a máquina como uma
+rede de núcleos independentes.
+Responsáveis por desenvolver o sistema Barrelfish, onde é executado um kernel por núcleo e três princípios básicos são seguidos: comunicação entre núcleos sempre é
+explícita, sua estrutura é neutra em relação ao hardware e o estado é replicado em vez de ser compartilhado, sendo mantido consistente por processos monitores.
+Em um trabalho anterior do mesmo grupo, \citet{schupbach2008diversity} é argumentado que a diversidade de hardware, nas formas de não
+uniformidade de memória, heterogeneidade de núcleos e diversidade entre sistemas, será um desafio tão grande quanto a escalabilidade no futuro.
+
+No ambiente HPC, a motivação principal é combinar o baixo overhead de um kernel reduzido, comumente denotado como kernel leve, com a compatibilidade do Linux.
+FusedOS \citep{park2012fusedos} particiona os núcleos entre o Linux e uma biblioteca derivada de kernel leve CNK, executada
+como um processo de usuário, responsável por gerenciar núcleos dedicados às aplicações.
+
+O trabalho Interface for Heterogeneous Kernels (IHK) \citep{shimosawa2014ihk} generaliza essa estrutura em um modelo mestre-escravo,
+no qual o Linux, como kernel mestre, reserva núcleos e memória, inicializa, consulta o estado, desliga e destrói instâncias
+de kernels leves, que se comunicam por uma camada própria.
+
+Ao comparar seis desses projetos, \citet{gerofi2016survey} optam por distinguir esses sistemas com particionamento estático de recursos,
+de sistemas que permitem reparticionamento dinâmico, dando grande importância a este ponto.
+
+Além disso, duas propostas exploram áreas complementares que valem a pena serem citadas.
+PIKA \citep{beckmann2014pika} projeta uma pilha de rede específica para multikernels, dividindo em servidores que se comunicam por mensagens.
+Enquanto MultiK \citep{kuo2019multik}, que apesar do nome não executa múltiplos kernels independentes, mas sim oferece a
+cada aplicação uma cópia do código do kernel que contém apenas o necessário para ela executar.
+Isso ocorre automaticamente durante a troca de contexto dos processos, tendo o objetivo de reduzir a superfície de ataque de
+aplicações que não precisam de todos os elementos do sistema e dando ênfase na ideia de especializar o kernel por aplicação.
+
+% ---------------------------------------------------------------------
+\section{Orquestração e balanceamento de carga}
+\label{sec:rel-orquestracao}
+
+Decidir onde executar cada carga e como redistribuí-la conforme a demanda é um problema estudado há muito tempo em sistemas distribuídos.
+\citet{casavant1988taxonomy} propõem uma taxonomia hierárquica de escalonamento em sistemas distribuídos que distingue abordagens estáticas de dinâmicas,
+Além disso, as abordagens dinâmicas são classificadas quanto à distribuição da responsabilidade pelas decisões e à cooperação entre os nós.
+
+\citet{shivaratri1992load} decompõem os algoritmos de distribuição de carga em quatro principais políticas, de transferência, decidir
+quando mover uma tarefa, de seleção, qual tarefa mover, localização, para onde mover e de informação, quando coletar o estado dos nós.
+Os algoritmos ainda são classificados naqueles que são iniciados pelo emissor, pelo receptor ou simétricos.
+
+Dois resultados fundamentam políticas simples, mas eficientes e escaláveis de balanceamento.
+Primeiro, \citet{mitzenmacher2001power} mostra que escolhendo a opção menos carregada entre apenas dois destinos aleatórios
+reduz exponencialmente a carga máxima esperada em relação a simplesmente escolher aleatoriamente.
+Em outro estudo, \citet{blumofe1999work} provam que o roubo de tarefas de maneira aleatorizada de um processador ativo para outro ocioso, executa computações
+com tempo próximo do ótimo.
+
+Ao revisar orquestradores como Kubernetes, Docker Swarm e Apache Mesos, \citet{swetha2025resource} identificam a escassez
+de propostas de orquestração orientada pela utilização de recursos e comparam a adequação de cada ferramenta.
+Na mesma linha, \citet{lu2025optimized} propõem uma implantação de contêineres em dois estágios: um algoritmo guloso distribui contêineres
+entre máquinas virtuais com granularidade grossa enquanto outro algoritmo genético reparte os recursos dentro de cada uma das máquinas virtuais.
+
+Agora em sistemas com múltiplos kernels, desde o início, era necessário saber como distribuir os recursos da máquina entre as instâncias.
+No Hive, os mecanismos de compartilhamento de recursos são implementados pela cooperação entre as células, mas a política
+é atribuída a um processo de usuário, o único com visão global do sistema, responsável por decidir de
+quais células alocar memória e como escalonar processos \citep{chapin1995hive}.
+
+No Disco, o monitor aplica políticas globais sobre as máquinas virtuais, movendo memória entre elas para evitar paginação
+desnecessária e escalonando dinamicamente as vCPUs para equilibrar a carga \citep{bugnion1997disco}.
+O Cellular Disco \citep{govil2000cellular} apresenta uma solução mais elaborada para sistemas multiprocessadores,
+nele, cada processador mantém sua própria fila de processadores virtuais, combinando um
+balanceador ocioso, que usa apenas informação local, com um balanceador periódico, que consulta uma árvore de carga global
+atualizada periodicamente.
+
+No Barrelfish, a base de conhecimento do sistema reúne informação pelo hardware e medições em tempo de execução, respondendo
+a consultas de otimização, como a alocação de drivers a núcleos e a construção de árvores de mensagens adaptadas à máquina
+\citep{baumann2009multikernel,schupbach2008diversity}.
+
+Nos multikernels com foco em HPC, a gerência das instâncias tende a ser exposta como uma interface.
+A IHK oferece operações para reservar núcleos e memória, inicializar, consultar, desligar e destruir instâncias
+de kernels leves, porém, não define políticas sobre quando as utilizar \citep{shimosawa2014ihk}.
+
+No projeto Hobbes, \citet{kocoloski2015composition} é proposto a execução em enclaves distintos de um mesmo nó, com um
+gerenciador de nó responsável pelo ciclo de vida dos enclaves e mecanismos de memória compartilhada entre os mesmos.
+
+Mais recentemente, a proposta de suporte a múltiplas instâncias do Linux em uma mesma máquina \citep{wang2025multikernel}
+utiliza a ideia de carregar as instâncias via \textit{kexec}, recebendo núcleos e memória que podem ser
+realocados em tempo de execução por meio de uma \textit{device tree} e do mecanismo de \textit{hotplug}
+\citep{wang2025lpc}.
+A ferramenta kerf \citep{multikernel2025kerf} ficou responsável por gerenciar a criação, configuração, monitoramento e a
+destruição dessas instâncias.
+
+\section{Observabilidade e monitoramento}
+\label{sec:rel-observabilidade}
+
+Esta seção apresenta fundamentos de como observar, coletar dados e analisá-los em sistemas distribuídos, em seguida como
+trabalhos aplicam técnicas parecidas em ambientes com múltiplos kernels.
+
+\citet{mansourisamani1993monitoring} definem um modelo funcional de monitoramento de sistemas distribuídos dividido em
+quatro atividades (geração, processamento, disseminação e apresentação de informação), tratadas como blocos que se combinam
+em diferentes proporções e momentos da análise, sendo uma base essencial para os trabalhos que seguem.
+Além disso, apontam a desatualização da informação como o principal problema existente dentro do monitoramento.
+
+Em uma revisão recente voltada a arquitetura de microsserviços, \citet{faseeha2025observability} analisam ferramentas de
+observabilidade em diferentes níveis, como de sistema, de serviço e de rede, organizadas em torno de três fontes que hoje já são comumente disseminadas:
+\textit{metrics}, \textit{logs} e \textit{traces}.
+
+Para métricas em clusters, Ganglia \citep{massie2004ganglia} adotam uma organização hierárquica: dentro de cada cluster,
+os nós comunicam e trocam seus estados via \textit{multicast}.
+Clusters distintos são federados por uma árvore de conexões \textit{peer-to-peer}, com armazenamento em bases de séries temporais.
+O projeto privilegia baixa sobrecarga por nó e escalabilidade, ao custo de métricas agregadas e de uma menor granularidade temporal.
+
+Agora, em um ambiente multikernel, a IHK concentra a gerência no kernel \textit{master} \citep{shimosawa2014ihk}, responsável por
+tomar o controle do mapeamento da memória física e orquestrar a alocação e reserva de recursos para os kernels \textit{slave} do ambiente.
+
+O LDMS \citep{agelastos2014ldms} mostram que é possível monitorar continuamente um sistema inteiro, com a frequência adequada, mesmo em ambientes HPC.
+LDMS utiliza processos coletores nos nós e processos agregadores, que reúnem os dados.
+Os autores quantificam a sobrecarga do monitoramento sobre as aplicações como baixa e negligenciável.
+
+O Omni-Kernel \citep{kvalnes2015omni} medem o consumo de recursos por completo, através de um processo,
+uma máquina virtual ou uma transação.
+Nele, o kernel é fatorado em componentes que se comunicam por mensagens, e escalonadores existem no meio do caminho,
+responsáveis por controlar a ordem de processamento e contabilizar o consumo.
+
+Em uma proposta de hardware, \citet{west2009coremonitors} dedicam um núcleo específico ao monitoramento, alimentado por detectores de
+eventos distribuídos pelo processador, mostrando como uma instância de kernel poderia contabilizar e exportar seu próprio consumo.
+
+Os próprios sistemas com múltiplos kernels também possuem sistemas de monitoramento e balanceamento por si só.
+A base de conhecimento do Barrelfish incorpora medições em tempo de execução, como a latência de comunicação entre cada par de
+núcleos \citep{baumann2009multikernel}, o balanceador periódico do Cellular Disco
+depende de uma árvore de carga atualizada constantemente \citep{govil2000cellular} e o PIKA mede o tempo de serviço de cada
+aplicação para orientar as escolhas realizadas \citep{beckmann2014pika}.
+Porém, a informação é coletada e consumida numa única máquina, não sendo explorado a ideia do compartilhamento entre nós em um cluster.
+
+% ---------------------------------------------------------------------
+\section{Disponibilidade e Isolamento}
+\label{sec:rel-disponibilidade}
+
+Uma grande motivação para dividir o sistema em múltiplos kernels é a disponibilidade das aplicações.
+No Hive \citep{chapin1995hive}, uma falha de hardware ou de software afeta apenas os processos que usam os recursos da célula prejudicada.
+O sistema emprega uma proteção em cada página contra escritas de outras células, descarta de maneira preventiva as páginas que uma
+célula que falhou poderia ter corrompido e possui detecção de falhas por heurísticas, cuja confirmação exige consenso das células sobreviventes.
+
+O Disco trata cada máquina virtual como unidade de contenção de falhas de software \citep{bugnion1997disco}, e o Cellular Disco estende
+essa contenção a falhas de hardware.
+Em centenas de experimentos com injeção de falhas, a recuperação foi bem-sucedida em todos os casos, levando menos de meio segundo \citep{govil2000cellular}.
+
+Além de conter falhas, a divisão em múltiplos kernels também é usada para isolar o desempenho das aplicações.
+O Pisces \citep{ouyang2015pisces} permite a coexistência, em um mesmo nó, de múltiplos ambientes de SO independentes e isolados,
+denominados enclaves, cada um executando um co-kernel leve, capaz de gerenciar uma partição de recursos de hardware, tratando o
+isolamento de desempenho como requisito principal e tendo seu foco em HPC
+
+Com ênfase na parte de segurança, pesquisas como BlackBox \citep{vanthof2022blackbox} buscam proteger a confidencialidade e a
+integridade de contêineres sem confiar no SO, por meio de um monitor que cria espaços de endereçamento físico protegidos
+para cada contêiner.
+Enquanto o MultiK \citep{kuo2019multik} garante maior segurança reduzindo a superfície de ataque ao remover mais de 90\% do
+código do kernel visível a cada aplicação que está sendo executada.
+Esses trabalhos, por mais que não executados sob a arquitetura multikernel, ressoam fortemente com sua filosofia.
+
+
+\section{Sumário e trabalhos revisados}\label{sec:sumario-e-trabalhos-revisados}
+
+A Tabela~\ref{tab:relacionados_ibn} apresenta os trabalhos selecionados e descritos, além de apresentar
+um resumo sobre as principais contribuições e foco de cada um deles.
+
+\begin{small} % Reduz o tamanho da fonte para que a tabela caiba melhor na página
+    \begin{longtable}{p{3cm} p{4cm} p{4cm} p{3cm}}
+
+% CABEÇALHO DA TABELA (Repetido em cada nova página)
+        \caption{Resumo dos Trabalhos Relacionados.}
+        \label{tab:relacionados_ibn} \\
+        \toprule
+        \textbf{Referência} & \textbf{Categoria} & \textbf{Contribuição principal} & \textbf{Relação com este trabalho} \\
+        \midrule
+        \endfirsthead % <--- Define que a parte acima é EXCLUSIVA da primeira página
+% CABEÇALHO DA PRIMEIRA PÁGINA
+
+% --- CABEÇALHO DAS PÁGINAS SEGUINTES (Sem o \label) ---
+        \caption*{Resumo dos Trabalhos Relacionados. (Continuação)} \\
+        \toprule
+        \textbf{Referência} & \textbf{Categoria} & \textbf{Contribuição principal} & \textbf{Relação com este trabalho} \\
+        \midrule
+        \endhead % <--- Define o cabeçalho repetido nas páginas seguintes
+
+% --- RODAPÉ INTERMEDIÁRIO (Páginas anteriores à última) ---
+        \bottomrule
+        \multicolumn{4}{r}{\footnotesize Continua na próxima página} \\
+        \endfoot
+
+% --- RODAPÉ FINAL (Apenas na última página) ---
+        \bottomrule
+        \endlastfoot
+
+% --- Arquiteturas com múltiplos kernels ---
+        \citet{chapin1995hive} & Multikernel & Hive: células com kernels independentes, contenção de falhas e política global no Wax & Origem da separação entre mecanismo e política \\
+        \midrule
+        \citet{bugnion1997disco} & Multikernel & Disco: múltiplas cópias de SO sobre monitor de máquinas virtuais enxuto & Políticas globais sobre instâncias independentes \\
+        \midrule
+        \citet{govil2000cellular} & Multikernel & Cellular Disco: monitor dividido em células, cluster virtual com contenção de falhas & Balanceamento hierárquico entre células \\
+        \midrule
+        \citet{boydwickizer2008corey} & Multikernel & Corey: aplicação controla o compartilhamento de estruturas do kernel & Mecanismos de alocação sem política automática \\
+        \midrule
+        \citet{wentzlaff2009fos} & Multikernel & fos: serviços do SO em frotas de servidores distribuídos por mensagens & Posicionamento espacial de serviços \\
+        \midrule
+        \citet{baumann2009multikernel} & Multikernel & Barrelfish: um kernel por núcleo, mensagens explícitas e estado replicado & Define a arquitetura multikernel \\
+        \midrule
+        \citet{schupbach2008diversity} & Multikernel & Diversidade de hardware e base de conhecimento do sistema & Base de informação para decisões de alocação \\
+        \midrule
+        \citet{park2012fusedos} & Multi-kernel HPC & FusedOS: kernel leve em nível de usuário ao lado do Linux & Partição estática entre kernels \\
+        \midrule
+        \citet{shimosawa2014ihk} & Multi-kernel HPC & IHK: interface de ciclo de vida e comunicação entre kernels & Plano de controle local a um nó \\
+        \midrule
+        \citet{gerofi2016survey} & Multi-kernel HPC & Levantamento de seis multi-kernels e critérios de comparação & Particionamento estático versus dinâmico \\
+        \midrule
+        \citet{beckmann2014pika} & Multikernel & PIKA: pilha de rede dividida em servidores com balanceamento distribuído & Balanceamento sem memória compartilhada \\
+        \midrule
+        \citet{kuo2019multik} & Especialização de kernel & MultiK: visão do código do kernel especializada por aplicação & Especialização por carga, não é multikernel \\
+        \midrule
+
+% --- Orquestração e balanceamento de carga ---
+        \citet{casavant1988taxonomy} & Balanceamento de carga & Taxonomia de escalonamento estático e dinâmico em sistemas distribuídos & Base de classificação das políticas \\
+        \midrule
+        \citet{shivaratri1992load} & Balanceamento de carga & Políticas de transferência, seleção, localização e informação & Estrutura de projeto do balanceador \\
+        \midrule
+        \citet{mitzenmacher2001power} & Balanceamento de carga & Poder de duas escolhas no balanceamento aleatorizado & Decisões descentralizadas com pouca informação \\
+        \midrule
+        \citet{blumofe1999work} & Balanceamento de carga & Roubo de tarefas aleatorizado com garantias de desempenho & Balanceamento iniciado pelo receptor \\
+        \midrule
+        \citet{swetha2025resource} & Orquestração & Revisão de orquestradores de contêineres e lacuna da orquestração por utilização & Lacuna análoga no nível de contêineres \\
+        \midrule
+        \citet{lu2025optimized} & Balanceamento de carga & Implantação em dois estágios: guloso entre VMs e genético dentro da VM & Estrutura em dois níveis, avaliada em simulação \\
+        \midrule
+
+        \citet{kocoloski2015composition} & Orquestração multikernel & Hobbes: composição de aplicações entre enclaves de um nó & Gerência de enclaves restrita a um nó \\
+        \midrule
+        \citet{wang2025multikernel} & Orquestração multikernel & Proposta de múltiplas instâncias do Linux via \texttt{kexec} & Plataforma-alvo provável do orquestrador \\
+        \midrule
+        \citet{wang2025lpc} & Orquestração multikernel & Realocação dinâmica de recursos entre instâncias via \textit{device tree} & Mecanismo de redimensionamento de instâncias \\
+        \midrule
+        \citet{multikernel2025kerf} & Orquestração multikernel & kerf: ciclo de vida e recursos de instâncias de kernel & Ferramenta mais próxima, limitada a um hospedeiro \\
+        \midrule
+
+% --- Observabilidade e monitoramento ---
+        \citet{mansourisamani1993monitoring} & Observabilidade & Modelo funcional de monitoramento de sistemas distribuídos & Base para a coleta de informação \\
+        \midrule
+        \citet{faseeha2025observability} & Observabilidade & Revisão de observabilidade em microsserviços com métricas, registros e rastros & Fundamentos e terminologia da área \\
+        \midrule
+        \citet{massie2004ganglia} & Observabilidade & Ganglia: monitoramento hierárquico e federado de clusters & Agregação de métricas por nó e entre clusters \\
+        \midrule
+        \citet{agelastos2014ldms} & Observabilidade multikernel & LDMS: monitoramento contínuo e leve de sistemas de grande escala & Modelo de coleta por nó e agregação em HPC \\
+        \midrule
+        \citet{kvalnes2015omni} & Observabilidade multikernel & Omni-Kernel: medição e atribuição de todo consumo de recursos & Contabilização por atividade \\
+        \midrule
+        \citet{west2009coremonitors} & Observabilidade multikernel & Núcleo de hardware dedicado ao monitoramento de desempenho & Realimentação do monitoramento ao escalonador \\
+        \midrule
+        \citet{erlingsson2011fay} & Observabilidade multikernel & Fay: rastreamento dinâmico do kernel ao cluster & Une kernel e cluster, mas com um kernel por máquina \\
+        \midrule
+        \citet{ferreira2008noise} & Observabilidade multikernel & Sensibilidade de aplicações ao ruído do SO por injeção no kernel & Coleta não pode interferir nos núcleos da aplicação \\
+        \midrule
+
+% --- Disponibilidade e isolamento ---
+        \citet{ouyang2015pisces} & Isolamento multikernel & Pisces: enclaves com co-kernels leves e isolamento de desempenho & Isolamento de desempenho entre instâncias \\
+        \midrule
+        \citet{vanthof2022blackbox} & Isolamento & BlackBox: monitor que isola contêineres de um SO não confiável & Imposição de fronteiras sem hipervisor completo \\
+
+    \end{longtable}
+
+\section{Considerações Finais}\label{sec:consideracoes-finais}
+
+    A análise de todos os trabalhos revela uma trajetória de algumas décadas com uma característica em comum, a gerência
+    da arquitetura multikernel é sempre feita no escopo de uma única máquina.
+
+    É possível evidenciar, principalmente três limitações, que abrem diversas portas para avanço e pesquisa.
+    Em primeiro lugar, como dito anteriormente, o escopo de gerência é sempre um único nó, no projeto Hive e no Disco é
+    mencionado clusterização como extensão futura, mas nenhum dos trabalhos analisados de fato as realiza.
+    Em segundo lugar, os mecanismos frequentemente existem apenas na parte teórica, como o Wax que nunca foi de fato implementado \citep{chapin1995hive},
+    ou deixam as decisões diretamente à aplicação, ou usuário, como é feito no Corey e no IHK \citep{boydwickizer2008corey,shimosawa2014ihk}.
+    Em terceiro lugar, as ferramentas de observabilidade tomam como unidade a máquina, o contêiner ou a requisição
+    \citep{massie2004ganglia,agelastos2014ldms,erlingsson2011fay}, e não a instância de kernel.
+
+    Entre os trabalhos analisados, nenhum trata a instância de kernel como unidade escalonável, elastica, observável e
+    recuperável num conjunto amplo de nós.
+    Sendo assim, existe espaço para a construção de uma camada de orquestração, tomando ideias
+    de orquestradores de contêineres comerciais da atualidade e estendendo-as para um cluster de nós em ambientes
+    com a arquitetura multikernel.
+    Realizando o monitoramento das instâncias, coletando informações dos núcleos e as agregando entre nós, para ser
+    possível a tomada de decisão da criação de novos jobs, redimensionamento e redistribuição de cargas pelo cluster.
+
+
+\end{small}

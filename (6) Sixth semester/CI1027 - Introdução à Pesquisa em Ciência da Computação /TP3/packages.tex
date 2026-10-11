@@ -1,0 +1,107 @@
+% Pacotes usados neste documento e suas respectivas configurações
+
+% ------------------------------------------------------------------------------
+
+% Definição de fontes
+
+% formato dos arquivos-fonte (utf8 no Linux e latin1 no Windows)
+\usepackage[utf8]{inputenc}	% arquivos LaTeX em Unicode (UTF8)
+
+% usar codificação T1 para ter caracteres acentuados corretos no PDF
+\usepackage[T1]{fontenc}
+
+% fonte usada no corpo do texto (pode alterar, mas descomente apenas uma)
+\usepackage{newtxtext,newtxmath}	% Times (se não tiver, use mathptmx)
+%\usepackage{lmodern}			% Computer Modern (fonte clássico LaTeX)
+%\usepackage{kpfonts}			% Kepler/Palatino (idem, use mathpazo)
+%\renewcommand{\familydefault}{\sfdefault} % Arial/Helvética (leia abaixo)
+
+% A biblioteca central da UFPR recomenda usar Arial, seguindo a recomendação da
+% ABNT. Essa é uma escolha ruim, pois fontes sans-serif são geralmente inade-
+% quados para textos longos e impressos, sendo melhores para páginas Web.
+% http://www.webdesignerdepot.com/2013/03/serif-vs-sans-the-final-battle/.
+
+% fontes usadas em ambientes específicos
+\usepackage[scaled=0.9]{helvet}		% Sans Serif
+\usepackage{courier}			% Verbatim, Listings, etc
+
+% fontes adicionais
+\usepackage{amsmath}		% pacotes matemáticos
+\usepackage{amsfonts}		% fontes matemáticas 
+%\usepackage{amssymb}		% símbolos 
+
+% ------------------------------------------------------------------------------
+
+% inclusão de figuras em PDF, PNG, PS, EPS
+\usepackage{graphicx}
+
+% subfiguras (subfigure is deprecated, don't use it)
+\usepackage[labelformat=simple]{subcaption}
+\renewcommand\thesubfigure{(\alph{subfigure})}
+
+% ------------------------------------------------------------------------------
+
+% inclusão/formatação de código-fonte (programas)
+\usepackage{listings}
+\lstset{language=c}
+\lstset{basicstyle=\ttfamily\footnotesize,commentstyle=\textit,stringstyle=\ttfamily}
+\lstset{showspaces=false,showtabs=false,showstringspaces=false}
+\lstset{numbers=left,stepnumber=1,numberstyle=\tiny}
+\lstset{columns=flexible,mathescape=true}
+\lstset{frame=single}
+\lstset{inputencoding=utf8,extendedchars=true}
+\lstset{literate={á}{{\'a}}1  {ã}{{\~a}}1 {à}{{\`a}}1 {â}{{\^a}}1
+                 {Á}{{\'A}}1  {Ã}{{\~A}}1 {À}{{\`A}}1 {Â}{{\^A}}1
+                 {é}{{\'e}}1  {ê}{{\^e}}1 {É}{{\'E}}1  {Ê}{{\^E}}1
+                 {í}{{\'\i}}1 {Í}{{\'I}}1
+                 {ó}{{\'o}}1  {õ}{{\~o}}1 {ô}{{\^o}}1
+                 {Ó}{{\'O}}1  {Õ}{{\~O}}1 {Ô}{{\^O}}1
+                 {ú}{{\'u}}1  {Ú}{{\'U}}1
+                 {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1 }
+
+% ------------------------------------------------------------------------------
+
+% formatação de algoritmos
+\usepackage{algorithm,algorithmic}
+\IfLanguageName{brazilian} {\floatname{algorithm}{Algoritmo}}{}
+\renewcommand{\algorithmiccomment}[1]{~~~// #1}
+%\algsetup{linenosize=\footnotesize,linenodelimiter=.}
+
+% ------------------------------------------------------------------------------
+
+% formatação de bibliografia (escolher UM estilo e comentar os demais)
+
+% 1: estilo Apalike + Natbib (recomendo usar este!)
+\usepackage{natbib}			% bibliografia no estilo NatBib
+\IfLanguageName{brazilian}
+{\bibliographystyle{apalike-ptbr}}	% formato em português
+{\bibliographystyle{apalike}}		% formato em inglês
+\renewcommand{\cite}{\citep}		% \cite deve funcionar como \citep
+
+% 2: estilo apacite (ATENÇÃO: ainda não tem suporte para português)
+%\usepackage[natbibapa]{apacite}
+%\bibliographystyle{apacite}
+
+% 3: outros estilos de bibliografia recomendados
+% Mais infos: https://pt.sharelatex.com/learn/Bibtex_bibliography_styles
+%
+%\bibliographystyle{alpha}		% [Maz06]
+%\bibliographystyle{plainnat}		% vide Google "LaTeX Natbib"
+%\bibliographystyle{plain}		% [1] ordem alfabética
+%\bibliographystyle{unsrt}		% [1] ordem de uso no texto
+% no estilo "unsrt", evita que citações nos índices sejam consideradas
+%\usepackage{notoccite}
+
+%\bibpunct{[}{]}{;}{a}{}{,}	% caracteres usados nas referências
+
+% ------------------------------------------------------------------------------
+
+% pacotes diversos
+\usepackage{alltt,moreverb}		% mais comandos no modo verbatim
+\usepackage[language=brazilian]{lipsum}	% gera texto aleatório (para os exemplos)
+\usepackage{currfile}			% infos sobre o arquivo/diretório atual
+\usepackage[final]{pdfpages}		% inclusão de páginas em PDF
+\usepackage{longtable}			% tabelas multi-páginas (tab símbolos/acrônimos)
+
+% ------------------------------------------------------------------------------
+
