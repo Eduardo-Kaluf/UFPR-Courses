@@ -5,7 +5,6 @@ using namespace std;
 using ll = long long;
 
 vector<ll> t[4 * 100015];
-ll INF = 9876454321;
 
 // [tl, tl)
 // v = index
@@ -23,16 +22,13 @@ void build(const vector<ll>& a, ll v, ll tl, ll tr) {
 
 ll query(ll v, ll tl, ll tr, ll l, ll r, ll x) {
     if (r <= tl || tr <= l)
-        return INF;
-    if (l <= tl && tr <= r) {
-        if (x >= tl && x < tr)
-            return t[v][x];
-        return INF;
-    }
+        return 0;
+    if (l <= tl && tr <= r)
+        return upper_bound(t[v].begin(), t[v].end(), x) - t[v].begin();
     ll tm = (tl + tr) / 2;
-    return min(query(v*2, tl, tm, l, r, x), 
-               query(v*2+1, tm, tr, l, r, x));
+    return query(v*2, tl, tm, l, r, x) + query(v*2+1, tm, tr, l, r, x);
 }
+
 
 int main () {
 	cin.tie(0)->sync_with_stdio(0);
@@ -46,16 +42,22 @@ int main () {
 
     build(vec, 1, 0, n);
 
+    vector<ll> s = vec;
+    sort(s.begin(), s.end());
+
     for (ll ii = 0; ii < q; ii++) {
         ll i, j, k;
         cin >> i >> j >> k;
-        
-        ll ans = query(1, 0, n, i, j, k);
-        
-        if (ans == INF)
-            cout << -1 << "\n"; 
-        else
-            cout << ans << "\n";
+
+        ll a = 0, b = n - 1;
+        while (a < b) {
+            ll mid = (a + b) / 2;
+            if (query(1, 0, n, i-1, j, s[mid]) >= k)
+                b = mid;
+            else
+                a = mid + 1;
+        }
+        cout << s[a] << "\n";
     }
 }
 

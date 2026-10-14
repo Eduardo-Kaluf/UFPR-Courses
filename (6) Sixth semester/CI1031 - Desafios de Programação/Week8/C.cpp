@@ -30,7 +30,7 @@ void push_sum(ll v) {
 }
 
 void update(ll v, ll tl, ll tr, ll l, ll r, ll addend) {
-    if (r <= tl || tr <= l) 
+    if (r <= tl || tr <= l)
         return;
     if (l <= tl && tr <= r) {
         t[v] += addend;
@@ -53,7 +53,7 @@ void push(ll v) {
 }
 
 void assign(ll v, ll tl, ll tr, ll l, ll r, ll new_val) {
-    if (r <= tl || tr <= l) 
+    if (r <= tl || tr <= l)
         return;
     if (l <= tl && tr <= r) {
         t[v] = new_val;
@@ -95,7 +95,7 @@ int main () {
 
 		if (id == 1) {
 			cin >> x;
-			update(1, 0, n, a, b, x);	
+			update(1, 0, n, a, b, x);
 		}
 		else if (id == 2) {
 			cin >> x;

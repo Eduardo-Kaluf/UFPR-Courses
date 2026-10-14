@@ -15,8 +15,8 @@ Este capítulo organiza os trabalhos correlatos em quatro seções.
 A Seção~\ref{sec:rel-multikernel} apresenta a evolução das arquiteturas com múltiplos kernels, desde o início com os sistemas para
 multiprocessadores de memória compartilhada até multikernels reduzidos utilizados em ambientes HPC.
 A Seção~\ref{sec:rel-orquestracao} discute como esses sistemas e orquestradores decidem a alocação de recursos
-e o balanceamento de carga dentro da própria arfquitetura e em ambientes distribuídos.
-A Seção~\ref{sec:rel-observabilidade} aborda monitoramento, o qual é o critério para a tomada das decisões de orquestração.
+e o balanceamento de carga dentro da própria arquitetura e em ambientes distribuídos.
+A Seção~\ref{sec:rel-observabilidade} aborda monitoramento, que é o critério para a tomada das decisões de orquestração.
 Já a Seção~\ref{sec:rel-disponibilidade} trata sobre isolamento e disponibilidade dessas instâncias e quais seus objetivos em geral.
 Por fim, a Seção~\ref{sec:sumario-e-trabalhos-revisados} sintetiza rapidamente tudo o que foi discutido.
 
@@ -25,23 +25,23 @@ Por fim, a Seção~\ref{sec:sumario-e-trabalhos-revisados} sintetiza rapidamente
 \label{sec:rel-multikernel}
 
 A ideia de estruturar o SO como um conjunto de kernels independentes surgiu há algumas décadas.
-O Hive \citep{chapin1995hive}, organiza o SO como um sistema distribuído interno de kernels, os quais são denominados células,
-cada uma delas é responsável por um conjunto fixo de nós e opera como um SO independente, enquanto
+O \textit{Hive} \citep{chapin1995hive} organiza o SO como um sistema distribuído interno de kernels, que são denominados células,
+onde cada uma delas é responsável por um conjunto fixo de nós e opera como um SO independente, enquanto
 cooperam para oferecer às aplicações uma imagem única e transparente de sistema.
 A comunicação entre células ocorre por meio de \textit{remote procedure calls} (RPC) e por leitura direta da memória de outras células.
 
-Em vez de reescrever o SO por completo, Disco \citep{bugnion1997disco} ataca o problema inserindo um pequeno monitor de máquinas virtuais
+Em vez de reescrever o SO por completo, \textit{Disco} \citep{bugnion1997disco} ataca o problema inserindo um pequeno monitor de máquinas virtuais
 que executa várias cópias de um SO na mesma máquina, comunicando-se por protocolos distribuídos comuns
 como NFS e TCP/IP.
 A abordagem permite executar sistemas operacionais especializados lado a lado com sistemas comerciais.
 
-O Cellular Disco \citep{govil2000cellular} estende a proposta dividindo o próprio monitor em partes menores, a fim de conter falhas
+O \textit{Cellular Disco} \citep{govil2000cellular} estende a proposta dividindo o próprio monitor em partes menores, a fim de conter falhas
 de hardware, transformando o multiprocessador no que seria um cluster virtual.
 
-Já o sistema Corey \citep{boydwickizer2008corey} parte do princípio de que as aplicações devem ser responsáveis por controlar o compartilhamento.
+Já o sistema \textit{Corey} \citep{boydwickizer2008corey} parte do princípio de que as aplicações devem ser responsáveis por controlar o compartilhamento.
 Por padrão, cada estrutura de dados do kernel é usada por um único núcleo, e abstrações como \textit{address ranges}, \textit{kernel cores}
 e \textit{shares} permitem à aplicação indicar explicitamente o que deve ser compartilhado.
-Por mais que execute um único kernel, o sistema Corey foi uma base importante para trabalhos futuros como Barrelfish.
+Por mais que execute um único kernel, o sistema \textit{Corey} foi uma base importante para trabalhos futuros como \textit{Barrelfish}.
 
 Enquanto isso, o FOS \citep{wentzlaff2009fos} propõe fatorar os serviços do SO em frotas de servidores distribuídos
 espacialmente pelos núcleos, permitindo a comunicação exclusivamente por mensagens, isso foi motivado pela constatação de que
@@ -51,16 +51,16 @@ a implementação em \citet{wang2025multikernel} feita a partir do kernel do Lin
 
 A formulação moderna do conceito é apresentada por \citet{baumann2009multikernel}, que propõem tratar a máquina como uma
 rede de núcleos independentes.
-Responsáveis por desenvolver o sistema Barrelfish, onde é executado um kernel por núcleo e três princípios básicos são seguidos: comunicação entre núcleos sempre é
+Os autores foram responsáveis por desenvolver o sistema \textit{Barrelfish}, onde é executado um kernel por núcleo e três princípios básicos são seguidos: comunicação entre núcleos sempre é
 explícita, sua estrutura é neutra em relação ao hardware e o estado é replicado em vez de ser compartilhado, sendo mantido consistente por processos monitores.
 Em um trabalho anterior do mesmo grupo, \citet{schupbach2008diversity} argumentam que a diversidade de hardware, nas formas de não
 uniformidade de memória, heterogeneidade de núcleos e diversidade entre sistemas, será um desafio tão grande quanto a escalabilidade no futuro.
 
 No ambiente HPC, a motivação principal é combinar o baixo overhead de um kernel reduzido, comumente denotado como kernel leve, com a compatibilidade do Linux.
-FusedOS \citep{park2012fusedos} particiona os núcleos entre o Linux e uma biblioteca derivada de kernel leve CNK, executada
+\textit{FusedOS} \citep{park2012fusedos} particiona os núcleos entre o Linux e uma biblioteca derivada de kernel leve \textit{Compute Node Kernel} (CNK), executada
 como um processo de usuário, responsável por gerenciar núcleos dedicados às aplicações.
 
-O trabalho Interface for Heterogeneous Kernels (IHK) \citep{shimosawa2014ihk} generaliza essa estrutura em um modelo mestre-escravo,
+O trabalho \textit{Interface for Heterogeneous Kernels} (IHK) \citep{shimosawa2014ihk} generaliza essa estrutura em um modelo mestre-escravo,
 no qual o Linux, como kernel mestre, reserva núcleos e memória, inicializa, consulta o estado, desliga e destrói instâncias
 de kernels leves, que se comunicam por uma camada própria.
 
@@ -68,8 +68,8 @@ Ao comparar seis desses projetos, \citet{gerofi2016survey} optam por distinguir 
 de sistemas que permitem reparticionamento dinâmico, dando grande importância a este ponto.
 
 Além disso, duas propostas exploram áreas complementares que merecem ser citadas.
-PIKA \citep{beckmann2014pika} projeta uma pilha de rede específica para multikernels, dividindo em servidores que se comunicam por mensagens.
-Enquanto MultiK \citep{kuo2019multik}, que apesar do nome não executa múltiplos kernels independentes, mas sim oferece a
+O serviço PIKA \citep{beckmann2014pika} projeta uma pilha de rede específica para multikernels, dividindo em servidores que se comunicam por mensagens.
+Por outro lado, o \textit{framework} MultiK \citep{kuo2019multik}, que apesar do nome não executa múltiplos kernels independentes, oferece a
 cada aplicação uma cópia do código do kernel que contém apenas o necessário para ela executar.
 Isso ocorre automaticamente durante a troca de contexto dos processos, tendo o objetivo de reduzir a superfície de ataque de
 aplicações que não precisam de todos os elementos do sistema e dando ênfase na ideia de especializar o kernel por aplicação.
@@ -82,8 +82,8 @@ Decidir onde executar cada carga e como redistribuí-la conforme a demanda é um
 \citet{casavant1988taxonomy} propõem uma taxonomia hierárquica de escalonamento em sistemas distribuídos que distingue abordagens estáticas de dinâmicas,
 Além disso, as abordagens dinâmicas são classificadas quanto à distribuição da responsabilidade pelas decisões e à cooperação entre os nós.
 
-\citet{shivaratri1992load} decompõem os algoritmos de distribuição de carga em quatro principais políticas, de transferência, decidir
-quando mover uma tarefa, de seleção, qual tarefa mover, localização, para onde mover e de informação, quando coletar o estado dos nós.
+\citet{shivaratri1992load} decompõem os algoritmos de distribuição de carga em quatro principais políticas: de transferência (decidir
+quando mover uma tarefa), de seleção (qual tarefa mover), de localização (para onde mover) e de informação (quando coletar o estado dos nós).
 Os algoritmos ainda são classificados naqueles que são iniciados pelo emissor, pelo receptor ou simétricos.
 
 Dois resultados fundamentam políticas simples, mas eficientes e escaláveis de balanceamento.
@@ -97,18 +97,18 @@ de propostas de orquestração orientada pela utilização de recursos e compara
 Na mesma linha, \citet{lu2025optimized} propõem uma implantação de contêineres em dois estágios: um algoritmo guloso distribui contêineres
 entre máquinas virtuais com granularidade grossa enquanto outro algoritmo genético reparte os recursos dentro de cada uma das máquinas virtuais.
 
-Agora em sistemas com múltiplos kernels, desde o início, era necessário saber como distribuir os recursos da máquina entre as instâncias.
-No Hive, os mecanismos de compartilhamento de recursos são implementados pela cooperação entre as células, mas a política
+No contexto de sistemas com múltiplos kernels, desde o início, era necessário saber como distribuir os recursos da máquina entre as instâncias.
+No sistema Hive, os mecanismos de compartilhamento de recursos são implementados pela cooperação entre as células, mas a política
 é atribuída a um processo de usuário, o único com visão global do sistema, responsável por decidir de
 quais células alocar memória e como escalonar processos \citep{chapin1995hive}.
 
-No Disco, o monitor aplica políticas globais sobre as máquinas virtuais, movendo memória entre elas para evitar paginação
+No sistema Disco, o monitor aplica políticas globais sobre as máquinas virtuais, movendo memória entre elas para evitar paginação
 desnecessária e escalonando dinamicamente as vCPUs para equilibrar a carga \citep{bugnion1997disco}.
-O Cellular Disco \citep{govil2000cellular} apresenta uma solução mais elaborada para sistemas multiprocessadores,
-nele, cada processador mantém sua própria fila de processadores virtuais, combinando um
+O sistema Cellular Disco \citep{govil2000cellular} apresenta uma solução mais elaborada para sistemas multiprocessadores.
+Nele, cada processador mantém sua própria fila de processadores virtuais, combinando um
 balanceador ocioso, que usa apenas informação local, com um balanceador periódico, que consulta uma árvore de carga global.
 
-No Barrelfish, a base de conhecimento do sistema reúne informação pelo hardware e medições em tempo de execução, respondendo
+No sistema Barrelfish, a base de conhecimento do sistema reúne informação pelo hardware e medições em tempo de execução, respondendo
 a consultas de otimização, como a alocação de drivers a núcleos e a construção de árvores de mensagens adaptadas à máquina
 \citep{baumann2009multikernel,schupbach2008diversity}.
 
@@ -141,19 +141,19 @@ Em uma revisão recente voltada a arquitetura de microsserviços, \citet{faseeha
 observabilidade em diferentes níveis, como de sistema, de serviço e de rede, organizadas em torno de três fontes que hoje já são comumente disseminadas:
 \textit{metrics}, \textit{logs} e \textit{traces}.
 
-Para métricas em clusters, Ganglia \citep{massie2004ganglia} adotam uma organização hierárquica: dentro de cada cluster,
+Para métricas em clusters, o sistema Ganglia \citep{massie2004ganglia} adota uma organização hierárquica: dentro de cada cluster,
 os nós comunicam e trocam seus estados via \textit{multicast}.
 Clusters distintos são federados por uma árvore de conexões \textit{peer-to-peer}, com armazenamento em bases de séries temporais.
 O projeto privilegia baixa sobrecarga por nó e escalabilidade, ao custo de métricas agregadas e de uma menor granularidade temporal.
 
-Agora, em um ambiente multikernel, a IHK concentra a gerência no kernel \textit{master} \citep{shimosawa2014ihk}, responsável por
+Em um ambiente multikernel, a IHK concentra a gerência no kernel \textit{master} \citep{shimosawa2014ihk}, responsável por
 tomar o controle do mapeamento da memória física e orquestrar a alocação e reserva de recursos para os kernels \textit{slave} do ambiente.
 
-O LDMS \citep{agelastos2014ldms} mostram que é possível monitorar continuamente um sistema inteiro, com a frequência adequada, mesmo em ambientes HPC.
+O serviço \textit{Lightweight Distributed Metric Service} (LDMS) \citep{agelastos2014ldms} mostra que é possível monitorar continuamente um sistema inteiro, com a frequência adequada, mesmo em ambientes HPC.
 LDMS utiliza processos coletores nos nós e processos agregadores, que reúnem os dados.
 Os autores quantificam a sobrecarga do monitoramento sobre as aplicações como baixa.
 
-O Omni-Kernel \citep{kvalnes2015omni} medem o consumo de recursos por completo e o atribui a um processo,
+O sistema Omni-Kernel \citep{kvalnes2015omni} mede o consumo de recursos por completo e o atribui a um processo,
 uma máquina virtual ou uma transação.
 Nele, o kernel é fatorado em componentes que se comunicam por mensagens, e escalonadores existem no meio do caminho,
 responsáveis por controlar a ordem de processamento e contabilizar o consumo.
@@ -161,10 +161,10 @@ responsáveis por controlar a ordem de processamento e contabilizar o consumo.
 Em uma proposta de hardware, \citet{west2009coremonitors} dedicam um núcleo específico ao monitoramento, alimentado por detectores de
 eventos distribuídos pelo processador, mostrando como uma instância de kernel poderia contabilizar e exportar seu próprio consumo.
 
-Os próprios sistemas com múltiplos kernels também possuem sistemas de monitoramento e balanceamento por si só.
-A base de conhecimento do Barrelfish incorpora medições em tempo de execução, como a latência de comunicação entre cada par de
-núcleos \citep{baumann2009multikernel}, o balanceador periódico do Cellular Disco
-depende de uma árvore de carga atualizada constantemente \citep{govil2000cellular} e o PIKA mede o tempo de serviço de cada
+Os próprios sistemas com múltiplos kernels também possuem sistemas de monitoramento e balanceamento próprios.
+A base de conhecimento do sistema Barrelfish incorpora medições em tempo de execução, como a latência de comunicação entre cada par de
+núcleos \citep{baumann2009multikernel}, o balanceador periódico do sistema Cellular Disco
+depende de uma árvore de carga atualizada constantemente \citep{govil2000cellular} e o serviço PIKA mede o tempo de cada
 aplicação para orientar as escolhas realizadas \citep{beckmann2014pika}.
 Porém, a informação é coletada e consumida numa única máquina, não sendo explorada a ideia do compartilhamento entre nós em um cluster.
 
@@ -173,23 +173,23 @@ Porém, a informação é coletada e consumida numa única máquina, não sendo 
 \label{sec:rel-disponibilidade}
 
 Uma grande motivação para dividir o sistema em múltiplos kernels é a disponibilidade das aplicações.
-No Hive \citep{chapin1995hive}, uma falha de hardware ou de software afeta apenas os processos que usam os recursos da célula prejudicada.
+No sistema Hive \citep{chapin1995hive}, uma falha de hardware ou de software afeta apenas os processos que usam os recursos da célula prejudicada.
 O sistema emprega uma proteção em cada página contra escritas de outras células, descarta de maneira preventiva as páginas que uma
 célula que falhou poderia ter corrompido e possui detecção de falhas por heurísticas, cuja confirmação exige consenso das células sobreviventes.
 
-O Disco trata cada máquina virtual como unidade de contenção de falhas de software \citep{bugnion1997disco}, e o Cellular Disco estende
+O sistema Disco trata cada máquina virtual como unidade de contenção de falhas de software \citep{bugnion1997disco}, e o sistema Cellular Disco estende
 essa contenção a falhas de hardware.
 Em centenas de experimentos com injeção de falhas, a recuperação foi bem-sucedida em todos os casos, levando menos de meio segundo \citep{govil2000cellular}.
 
 Além de conter falhas, a divisão em múltiplos kernels também é usada para isolar o desempenho das aplicações.
-O Pisces \citep{ouyang2015pisces} permite a coexistência, em um mesmo nó, de múltiplos ambientes de SO independentes e isolados,
+O sistema Pisces \citep{ouyang2015pisces} permite a coexistência, em um mesmo nó, de múltiplos ambientes de SO independentes e isolados,
 denominados enclaves, cada um executando um co-kernel leve, capaz de gerenciar uma partição de recursos de hardware, tratando o
 isolamento de desempenho como requisito principal e tendo seu foco em HPC
 
 Com ênfase na parte de segurança, pesquisas como BlackBox \citep{vanthof2022blackbox} buscam proteger a confidencialidade e a
 integridade de contêineres sem confiar no SO, por meio de um monitor que cria espaços de endereçamento físico protegidos
 para cada contêiner.
-Enquanto o MultiK \citep{kuo2019multik} garante maior segurança reduzindo a superfície de ataque ao remover mais de 90\% do
+Por outro lado, o \textit{framework} MultiK \citep{kuo2019multik} garante maior segurança reduzindo a superfície de ataque ao remover mais de 90\% do
 código do kernel visível a cada aplicação que está sendo executada.
 Esses trabalhos, por mais que não executados sob a arquitetura multikernel, ressoam fortemente com sua filosofia.
 
@@ -200,7 +200,7 @@ A Tabela~\ref{tab:relacionados_ibn} apresenta os trabalhos selecionados e descri
 um resumo sobre as principais contribuições e foco de cada um deles.
 
 \begin{small} % Reduz o tamanho da fonte para que a tabela caiba melhor na página
-    \begin{longtable}{p{3cm} p{4cm} p{4cm} p{3cm}}
+    \begin{longtable}{p{3cm} p{2.5cm} p{4.75cm} p{3.75cm}}
 
 % CABEÇALHO DA TABELA (Repetido em cada nova página)
         \caption{Resumo dos Trabalhos Relacionados.}
@@ -236,7 +236,7 @@ um resumo sobre as principais contribuições e foco de cada um deles.
         \midrule
         \citet{boydwickizer2008corey} & Multikernel & Corey: aplicação controla o compartilhamento das estruturas do kernel & Mecanismos de alocação manuais \\
         \midrule
-        \citet{wentzlaff2009fos} & Multikernel & fos: serviços do SO distribuídos por mensagens & Distribuição espacial de serviços \\
+        \citet{wentzlaff2009fos} & Multikernel & FOS: serviços do SO distribuídos por mensagens & Distribuição espacial de serviços \\
         \midrule
         \citet{baumann2009multikernel} & Multikernel & Barrelfish: um kernel por núcleo, mensagens explícitas e estado replicado & Define a arquitetura multikernel \\
         \midrule
