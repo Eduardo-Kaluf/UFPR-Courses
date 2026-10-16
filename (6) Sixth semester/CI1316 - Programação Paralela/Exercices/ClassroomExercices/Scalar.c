@@ -1,5 +1,5 @@
 /*
- * 
+ *
 Compile, por exemplo, com GCC:
 gcc -O3 -fopenmp-simd -march=native simd.c -o simd
 
@@ -9,9 +9,9 @@ gcc -O3 -fopenmp-simd -march=native \
     -fopt-info-vec-optimized \
     -fopt-info-vec-missed \
     simd.c -o simd
- * 
- * 
- * 
+ *
+ *
+ *
  * */
 
 
@@ -21,7 +21,7 @@ gcc -O3 -fopenmp-simd -march=native \
 #include <math.h>
 #include <omp.h>
 
-#define N (1 << 25)
+#define N (1 << 30)
 
 void process_scalar(const float *x, const float *y,
                     float *z, int n,
@@ -38,23 +38,19 @@ void process_scalar(const float *x, const float *y,
 }
 
 /* TODO: os alunos devem implementar a versão SIMD */
-void process_simd( const float  *__restrict x, const float  * __restrict y,
-                  float *__restrict z, int n,
+void process_simd(const float *restrict x, const float *restrict y,
+                  float *restrict z, int n,
                   float alpha, float beta)
 {
-    float v1, v2, v3;
-    #pragma omp for simd aligned(x, y, z:32)
+    #pragma omp simd
     for (int i = 0; i < n; i++) {
-        v1 = alpha * x[i];
-        v2 = beta * y[i];
-        v3 = v1 + v2;
+        float v = alpha * x[i] + beta * y[i];
 
-        z[i] = (v3 * v3);
+        z[i] = v * v;
 
-        if (v3 <= 0.0f)
+        if (v <= 0.0f)
             z[i] = 0.0f;
     }
-
 }
 
 int main(void)
@@ -89,7 +85,7 @@ int main(void)
     double t1 = omp_get_wtime();
 
     /* Versao a ser vetorizada */
-    double t2 = omp_get_wtime();    
+    double t2 = omp_get_wtime();
     process_simd(x, y, z2, n, alpha, beta);
     double t3 = omp_get_wtime();
 
@@ -126,4 +122,3 @@ int main(void)
 
     return errors == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
