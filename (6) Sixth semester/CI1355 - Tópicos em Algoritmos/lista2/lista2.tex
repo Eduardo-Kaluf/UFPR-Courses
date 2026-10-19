@@ -25,6 +25,10 @@
 \newcommand{\PrivKcpa}[3]{\mathsf{PrivK}^{\mathrm{cpa}}_{#1,#2}(#3)}
 \newcommand{\PrivKbit}[3]{\mathsf{PrivK}^{\mathrm{cpa}\text{-}1}_{#1,#2}(#3)}
 \newcommand{\PrivKccaI}[3]{\mathsf{PrivK}^{\mathrm{cca}\text{-}1}_{#1,#2}(#3)}
+\usepackage{titlesec}
+
+\titleformat*{\section}{\normalsize\bfseries}
+\titleformat*{\subsection}{\small\bfseries}
 
 \title{Lista 2 \\ EDUARDO KALUF - GRR20241770 \\ PEDRO TAKEO SHIMA - GRR20240627}
 \author{}
@@ -43,14 +47,34 @@
     \subsection*{a) ``Seja $\mathcal{A}$ um algoritmo de tempo polinomial $q(n)$ tal que
         $\mathcal{A}^{\mathcal{O}(\cdot)}(1^{n}) = 1$ se e somente se $\mathcal{A}$ encontra
         uma colisão na função $\mathcal{O}\colon \{0,1\}^{n} \to \{0,1\}^{n}$.
-        Argumente que, se $f\colon \{0,1\}^{n} \to \{0,1\}^{n}$ é uma
+        Usando o Lema A.15 do livro, argumente que, se $f\colon \{0,1\}^{n} \to \{0,1\}^{n}$ é uma
         função aleatória, então:
         \[
             \Pr\!\left[\mathcal{A}^{f(\cdot)}(1^{n}) = 1\right] \le \frac{q(n)^{2}}{2^{n+1}}.\text{''}
         \]
     }
 
-% Resolução
+    Para cada $x \in \{0,1\}^n$, o valor de $f(x)$ é uniforme em $\{0,1\}^n$ e independente de todos os outros valores.
+    Assim, $\mathcal{A}$ só consegue obter o valor de $f(x)$ se de fato consultar o oráculo, de modo que suas $q(n)$
+    consultas correspondem a $q(n)$ valores uniformes e independentes em $\{0,1\}^n$.
+    Temos pelo $Lema \ A.15$ que a probabilidade de colisão é no máximo:
+
+    \[
+        \mathrm{coll}(q, N) \le \frac{q^2}{2N}.
+    \]
+
+    Assim, como o total de strings possíveis geradas por $f$ é $N = 2^n$ e como identificar uma colisão é exatamente o objetivo do nosso
+    algoritmo polinomial, temos:
+
+    \[
+        \Pr\left[\mathcal{A}^{f(\cdot)}(1^n) = 1\right]
+        \le \frac{q(n)^2}{2 \cdot 2^n}
+        = \frac{q(n)^2}{2^{n+1}},
+    \]
+
+    que é exatamente o que queríamos demonstrar.
+
+    \clearpage
 
     \subsection*{b) ``Usando o fato de que $F$ é pseudoaleatória, conclua que existe uma
     função negligenciável $\negl$ tal que
@@ -58,7 +82,31 @@
             \Pr\!\left[\mathcal{A}^{F_k(\cdot)}(1^{n}) = 1\right] \le \negl(n).\text{''}
         \]}
 
-% Resolução
+    Sabemos que:
+
+    \[
+        \Pr_{f \in \mathrm{Func}_n}\left[\mathcal{A}^{f(\cdot)}(1^n) = 1\right]
+        \le \frac{q(n)^2}{2^{n+1}}.
+    \]
+
+    Como $F$ é uma função pseudoaleatória, segue que existe uma função
+    negligenciável $\negl$ tal que:
+
+    \[
+        \left|
+            \Pr_{k \in \{0,1\}^n}\left[\mathcal{A}^{F_k(\cdot)}(1^n) = 1\right]
+            - \Pr_{f \in \mathrm{Func}_n}\left[\mathcal{A}^{f(\cdot)}(1^n) = 1\right]
+        \right| \le \negl(n).
+    \]
+
+    Como $q(n)^2/2^{n+1}$ é uma função negligenciável, e a soma de duas
+    funções negligenciáveis resulta em uma função negligenciável, segue que
+    existe uma função negligenciável $\negl'$ tal que:
+
+    \[
+        \Pr_{k \in \{0,1\}^n}\left[\mathcal{A}^{F_k(\cdot)}(1^n) = 1\right]
+        \le \negl'(n).
+    \]
 
     \clearpage
 
@@ -66,7 +114,36 @@
     \section*{Questão 2 --- ``Prove que o modo de operação CTR não é CCA-seguro.''}
 %======================================================================
 
-% Resolução
+    Considere um adversário $\mathcal{A}$ no experimento
+    $\mathsf{PrivK}^{\mathrm{cca}}_{\mathcal{A},\Pi}(n)$ utilizando o modo de operação CTR:
+
+    \begin{itemize}
+
+        \item $\mathcal{A}$ envia ao desafiante duas mensagens distintas de mesmo tamanho,
+        $m_0 = 0^{n}$ e $m_1 = 1^{n}$.
+
+        \item $\mathcal{A}$ recebe o texto cifrado de desafio $c = ctr \| c'$.
+
+        \item $\mathcal{A}$ inverte o primeiro bit de $c'$, obtendo $c'' = c' \oplus (1\|0^{n-1})$,
+        e consulta o oráculo de decifragem com esse novo texto cifrado, o que é permitido
+        pois $ctr \| c'' \neq c$.
+
+    \end{itemize}
+
+    Como a decifragem do CTR é apenas um XOR com uma função sobre $ctr$ (que permanece inalterado) e o bloco cifrado, o oráculo devolve
+    $m_b$ com exatamente o primeiro bit trocado.
+
+    $\mathcal{A}$ inverte novamente esse bit, obtendo $m_b$, compara com
+    $m_0$ e $m_1$ e devolve o $b'$ correspondente.
+
+    Dessa forma, $\mathcal{A}$ descobre a mensagem cifrada com a seguinte probabilidade:
+    \[
+        \Pr\!\left[\mathsf{PrivK}^{\mathrm{cca}}_{\mathcal{A},\Pi}(n) = 1\right] = 1,
+    \]
+
+    o que é claramente maior que $\frac{1}{2} + \negl(n)$. \\
+
+    Portanto, o modo CTR não é CCA-seguro.
 
     \clearpage
 
@@ -74,10 +151,29 @@
     \section*{Questão 3 --- ``(Exercício 4.1 do livro, adaptado) Considere um MAC
         $\Pi = (\Gen, \Mac, \Vrfy)$ tal que, para uma chave $k \in \{0,1\}^{n}$, $\Mac_k$
         sempre tem como saída uma tag de tamanho $c \cdot \log_2 n$, onde $c$ é uma
-        constante. Prove que $\Pi$ não pode ser um MAC seguro.''k}
+        constante. Prove que $\Pi$ não pode ser um MAC seguro.''}
 %======================================================================
 
-% Resolução
+    Considere o adversário $\mathcal{A}$ que escolhe uma mensagem qualquer $m$ e uma tag
+    $t \in \{0,1\}^{c \lg n}$ uniformemente ao acaso, devolvendo $(m, t)$.
+
+    É fato que existe pelo menos uma tag válida para a mensagem $m$ escolhida.
+    Como o total de tags possíveis é $2^{c \lg n}$, temos o seguinte:
+
+    \[
+        \Pr\left[\text{Mac-forge}_{\mathcal{A},\Pi}(n) = 1\right]
+        \ge \frac{1}{2^{c \lg n}}
+        = \frac{1}{(2^{\lg n})^c}
+        = \frac{1}{n^c}.
+    \]
+    Como $n^c$ é um polinômio, essa probabilidade não é negligenciável, ou seja, é impossível que:
+
+    \[
+        \Pr\left[\text{Mac-forge}_{\mathcal{A},\Pi}(n) = 1\right]
+        \le \negl(n)
+    \]
+
+    Portanto, $\Pi$ não é um MAC seguro.
 
     \clearpage
 
@@ -91,7 +187,7 @@
 
     \subsection*{a)}
 
-    \begin{quote}
+    \begin{quote}\small\bfseries
         ``Seja $\tilde{\Pi}$ uma versão da cifra da Construção 3.30 onde se usa uma função
         aleatória no lugar da função pseudoaleatória $F$. Fixe um adversário probabilístico
         polinomial $\mathcal{A}$ e considere o experimento
@@ -115,29 +211,163 @@
         Prove que $\Pr[\Ruim] \le \dfrac{q(n)}{2^{n-1}}$ e que
         $\Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1 \mid \overline{\Ruim}\right]
         = \dfrac{1}{2}$, onde $q(n)$ é um limite para o número de consultas de
-        cifragem/decifragem que $\mathcal{A}$ realiza. Conclua então que
+        cifragem/decifragem que $\mathcal{A}$ realiza.
+        Conclua então que:
         \[
             \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]
             \le \frac{1}{2} + \frac{q(n)}{2^{n-1}}.\text{''}
         \]
     \end{quote}
 
-% Resolução
 
-    \subsection*{b)}
+    Do mesmo modo que $\Pr[\Repete] \le \frac{q(n)}{2^n}$, temos também $\Pr[\Repete'] \le \frac{q(n)}{2^n}$, pois como
+    $r^{*}$ é sorteado uniformemente depois de todas as consultas de decifragem, cada uma das consultas tem probabilidade $2^{-n}$
+    de utilizar $r^{*}$.
 
-    \begin{quote}
-        ``Usando o fato de que $F$ é uma função pseudoaleatória, prove que existe uma função
-        negligenciável $\negl$ tal que:
+    Dessa forma:
+
+    \[
+        \Pr[\Ruim] \le \frac{2q(n)}{2^n} = \frac{q(n)}{2^{n-1}}.
+    \]
+
+    Além disso, caso este cenário ruim não ocorra, o texto cifrado de
+    desafio funciona como um one-time pad e podemos afirmar que:
+
+    \[
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1 \mid \overline{\Ruim}\right]
+        = \frac{1}{2}.
+    \]
+
+    Como toda probabilidade é no máximo 1, temos também:
+
+    \[
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1 \mid \Ruim\right] \le 1
+    \]
+
+    Aplicamos então a lei da probabilidade total:
+
+    \begin{align*}
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]
+        &\le \frac{q(n)}{2^{n-1}} \cdot
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1 \mid \Ruim\right] + 1 \cdot
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1 \mid \overline{\Ruim}\right].
+    \end{align*}
+
+    Assim:
+
+    \[
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]
+        \le \frac{1}{2} + \frac{q(n)}{2^{n-1}}.
+    \]
+
+    \subsection*{b) ``Usando o fato de que $F$ é uma função pseudoaleatória, prove que existe uma função
+    negligenciável $\negl$ tal que:
         \[
             \left|\,\Pr\!\left[\PrivKccaI{\mathcal{A}}{\Pi}{n} = 1\right]
                 - \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]\right|
             \le \negl(n).
         \]
-        Conclua então que a Construção 3.30 é CCA-1-segura.''
-    \end{quote}
+        Conclua então que a Construção 3.30 é CCA-1-segura.''}
 
-% Resolução
+    Considere a seguinte redução $D$, com foco nas consultas:
+
+    \begin{center}
+        \resizebox{\textwidth}{!}{%
+            \begin{tikzpicture}[
+                >={Stealth[length=2mm]},
+                font=\small,
+                ator/.style={draw,rounded corners=2pt,fill=gray!12,
+                minimum width=3.5cm,minimum height=6cm},
+                oraculo/.style={draw,minimum width=2.5cm,minimum height=2.5cm,font=\Large},
+                nome/.style={anchor=north,font=\small},
+                msg/.style={midway,above=1pt,font=\footnotesize,inner sep=1pt},
+                grupo/.style={font=\scriptsize\itshape,text=gray,align=center}
+            ]
+
+                %% Posições
+                \def\xO{1.25}   % borda direita do oráculo
+                \def\xDl{5.25}  % borda esquerda da redução
+                \def\xDr{8.75}  % borda direita da redução
+                \def\xA{12.25}  % borda esquerda do adversário
+
+                %% Bloquinhos
+                \node[oraculo] (O) at (0,0) {$\mathcal{O}$};
+
+                \node[ator,fill=blue!4] (D) at (7,0) {};
+                \node[nome] at ([yshift=-10pt]D.north) {Redução $D$};
+
+                \node[ator] (A) at (14,0) {};
+                \node[nome] at ([yshift=-10pt]A.north) {Adversário $\mathcal{A}$};
+
+                %% Redução <-> Oráculo
+                \draw[->] (\xDl,0.4)  -- node[msg] {$r$} (\xO,0.4);
+                \draw[->] (\xO,-0.4)  -- node[msg] {$\mathcal{O}(r)$} (\xDl,-0.4);
+
+                %% Consultas de cifragem
+                \node[grupo] at (10.5,2.75) {cifragem};
+                \draw[->] (\xA,2.2) -- node[msg] {$m$} (\xDr,2.2);
+                \draw[->] (\xDr,1.6) -- ++(1,0) |- node[pos=0.25,right,font=\footnotesize]
+                    {$r \leftarrow \{0,1\}^n$} (\xDr,1.0);
+                \draw[->] (\xDr,0.3) -- node[msg] {$\langle r,\, m \oplus \mathcal{O}(r) \rangle$} (\xA,0.3);
+
+                %% Separador
+                \draw[gray,dashed] (\xDr,-0.35) -- (\xA,-0.35);
+
+                %% Consultas de decifragem (só antes do desafio)
+                \draw[->] (\xA,-1.1) -- node[msg] {$\langle r,\, s \rangle$} (\xDr,-1.1);
+                \draw[->] (\xDr,-1.9) -- node[msg] {$s \oplus \mathcal{O}(r)$} (\xA,-1.9);
+                \node[grupo] at (10.5,-2.55) {decifragem\\(só antes do desafio)};
+            \end{tikzpicture}}
+    \end{center}
+
+    Lembrando que:
+    \begin{itemize}
+        \item a redução $D$ não sabe se $\mathcal{O}$ é $f$ ou $F_k$;
+        \item $D$ não conhece $k$ caso $\mathcal{O} = F_k$;
+        \item $D$ usa $\mathcal{O}$ para cifrar as mensagens de $\mathcal{A}$ e
+        também para decifrar as consultas de $\mathcal{A}$ feitas antes do envio das
+        mensagens de desafio.
+        \item quando $\mathcal{A}$ envia $m_0, m_1$, $D$ sorteia $b \leftarrow \{0,1\}$ e
+        $r^{*} \leftarrow \{0,1\}^n$ e devolve $\langle r^{*}, m_b \oplus \mathcal{O}(r^{*}) \rangle$.
+    \end{itemize}
+
+    Ao final, se $\mathcal{A}$ vence, a redução supõe que $\mathcal{O} = F_k$ e devolve $1$,
+    caso contrário, devolve $0$.
+
+    Assim, se $\mathcal{O}$ é aleatório, pelo item (a) a probabilidade de $\mathcal{A}$ vencer é
+    $\Pr \le \frac{1}{2} + \frac{q(n)}{2^{n-1}}$. Se $\mathcal{O}$ é pseudoaleatório, essa
+    probabilidade é no máximo um pouco maior que isto, logo:
+
+    \begin{itemize}
+        \item Se $\mathcal{O} = f$ para $f$ aleatória, então $D$ simula o experimento
+        $\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n}$ para $\mathcal{A}$ e então:
+        \[
+            \Pr\!\left[D^{f(\cdot)}(1^n) = 1\right]
+            = \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right].
+        \]
+        \item De maneira semelhante, se $\mathcal{O} = F_k$, então $D$ simula o
+        experimento $\PrivKccaI{\mathcal{A}}{\Pi}{n}$ para $\mathcal{A}$ e então:
+        \[
+            \Pr\!\left[D^{F_k(\cdot)}(1^n) = 1\right]
+            = \Pr\!\left[\PrivKccaI{\mathcal{A}}{\Pi}{n} = 1\right].
+        \]
+        \item Como $F$ é uma função pseudoaleatória, segue que existe uma função negligenciável $\negl$
+        tal que:
+        \[
+            \left|\,\Pr\!\left[\PrivKccaI{\mathcal{A}}{\Pi}{n} = 1\right]
+                - \Pr\!\left[\PrivKccaI{\mathcal{A}}{\tilde{\Pi}}{n} = 1\right]\right|
+            \le \negl(n).
+        \]
+    \end{itemize}
+
+    Combinando com o item (a),
+    \[
+        \Pr\!\left[\PrivKccaI{\mathcal{A}}{\Pi}{n} = 1\right]
+        \le \frac{1}{2} + \frac{q(n)}{2^{n-1}} + \negl(n),
+    \]
+    e como $\frac{q(n)}{2^{n-1}} + \negl(n)$ é negligenciável, a Construção 3.30 é
+    CCA-1-segura.
+
 
     \clearpage
 
@@ -148,6 +378,41 @@
         resistente à colisões? Justifique sua resposta.''}
 %======================================================================
 
-% Resolução
+    Sim, $(\Gen, \hat H)$ também é resistente a colisões.
+
+    Suponha uma execução com sucesso de um adversário $\hat{\mathcal{A}}$, o qual devolve o par $(x, x')$ com $x \neq x'$ e $\hat H^s(x) = \hat H^s(x')$,
+    ou seja, $H^s(H^s(x)) = H^s(H^s(x'))$.
+
+    Temos dois casos em que encontramos colisões em $H$ utilizando este adversário:
+
+    \begin{enumerate}
+        \item $H^{s}(x) = H^{s}(x')$: como $x \neq x'$, o par $(x, x')$ já é uma
+        colisão em $H^{s}$ (colisão na aplicação interna).
+
+        \item $H^{s}(x) \neq H^{s}(x')$: então $y = H^{s}(x)$ e $y' = H^{s}(x')$ são
+        entradas distintas com $H^{s}(y) = H^{s}(y')$, logo $(y, y')$ é uma colisão
+        em $H^{s}$ (colisão na aplicação externa).
+    \end{enumerate}
+
+
+    Agora, considere o adversário $\mathcal{A}'$, que tem o objetivo de encontrar uma colisão em $H$.
+    Dado $s$, ele executa $\hat{\mathcal{A}}(s)$, um adversário que tenta encontrar uma colisão em $\hat H$, obtendo o par $(x, x')$.
+
+    $\mathcal{A}'$ então calcula o Hash de ambos os valores, $H^{s}(x)$ e $H^{s}(x')$, caso eles sejam iguais, os próprios valores $(x, x')$ são
+    devolvidos, pois causam uma colisão ao aplicar $H$ neles (caso 1).
+
+    Caso sejam diferentes, é devolvido o Hash desses valores $(H^{s}(x), H^{s}(x'))$ (caso 2).
+
+    Dessa forma, $\mathcal{A}'$ sempre irá encontrar uma colisão para $H$ quando $\hat{\mathcal{A}}(s)$ encontrar uma colisão em $\hat H$.
+    Assim temos que:
+    \[
+        \Pr\left[\text{Hash-coll}_{\hat{\mathcal{A}}, \hat H}(n) = 1\right]
+        \le \Pr\left[\text{Hash-coll}_{\mathcal{A}', H}(n) = 1\right]
+        \le \negl(n),
+    \]
+
+    pois $H$ é resistente a colisões e $\mathcal{A}'$ é polinomial.
+
+    Portanto, concluímos que $(\Gen, \hat H)$ é resistente a colisões.
 
 \end{document}
