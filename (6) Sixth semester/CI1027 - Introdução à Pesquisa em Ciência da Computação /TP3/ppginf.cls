@@ -695,7 +695,7 @@
 
   \iffinalmode
 
-    % imagem de fundo da capa, se estiver definida em main.tex
+    % imagem de fundo da capa, se estiver definida em TP4.tex
     \ifx\@coverimg\@empty
     \else
       \ThisCenterWallPaper{1.0}{\@coverimg}
@@ -770,13 +770,13 @@
   \begin{minipage}{8cm}
   \begin{footnotesize}
 
-    % descrição do documento, se estiver definida em main.tex
+    % descrição do documento, se estiver definida em TP4.tex
     \ifx\@descr\@empty
     \else
       \@descr.
     \fi
 
-    % área de concentração, se estiver definida em main.tex
+    % área de concentração, se estiver definida em TP4.tex
     \ifx\@field\@empty
     \else
       % 1 linha espaço 1.5
@@ -784,7 +784,7 @@
       \@tagfield: \emph{\@field}.
     \fi
 
-    % orientador, se estiver definido em main.tex
+    % orientador, se estiver definido em TP4.tex
     \ifx\@advisor\@empty
     \else
       % 1 linha espaço 1.5
@@ -792,7 +792,7 @@
       \@tagadvisor: \@advisor.
     \fi
 
-    % coorientador, se estiver definido em main.tex
+    % coorientador, se estiver definido em TP4.tex
     \ifx\@coadvisor\@empty
     \else
       % 1 linha espaço 1.5
