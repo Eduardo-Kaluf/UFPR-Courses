@@ -63,18 +63,10 @@
 \end{resumo}
 
 \section{Introdução} \label{sec:introducao}
-% Contexto: manycore e motivação para criação de multikernels (histórico)
-%A crescente quantidade de núcleos nos multiprocessadores é algo que vem acontecendo há um longo tempo.
-%Os sistemas operacionais, porém, não evoluíram para tirar total proveito desses multiprocessadores, que já se consolidaram comercialmente,
-%sendo muitas vezes necessária a criação de novas políticas, como xxxx, e de \textit{workarounds} a fim de extrair proveito dos núcleos.
-%Tudo isso vem com um custo lógico de implementação, complexidade de sistema, aumento da superfície do kernel e \textit{overhead} de controle lógico.
-%Por esses motivos, a arquitetura multikernel foi criada com o objetivo de retirar essas responsabilidades de um kernel monolítico centralizado
-%e subdividir fisicamente os núcleos.
-
+% Contexto inicial, multiplos cores e motivação para criação da arquitetura multikernel (histórico)
 O número de núcleos por processador cresce incessantemente, e processadores já chegam a ultrapassar uma
 centena de núcleos em um único chip~\cite{amd2024epyc}.
-Os sistemas operacionais monolíticos, projetados em torno
-de estruturas de dados e controle compartilhadas por todos os núcleos, acompanharam esse crescimento à custa de mecanismos cada
+Os sistemas operacionais monolíticos, projetados em torno de estruturas de dados e controle compartilhadas por todos os núcleos, acompanharam esse crescimento à custa de mecanismos cada
 vez mais complexos, como travas de granularidade fina, estruturas de dados especificas por núcleo e políticas de afinidade e
 isolamento de CPUs~\cite{boydwickizer2010mosbench}. Essas soluções aumentam a complexidade, a superfície do kernel,
 e tornam o compartilhamento de estado entre núcleos seja um \textit{bottleneck} para o desempenho e escalabilidade~\cite{boydwickizer2008corey}.
@@ -82,48 +74,65 @@ Nesse contexto, surge a arquitetura multikernel, propondo tratar a máquina como
 com estado replicado e comunicação explícita por mensagens, em vez de um único kernel com estado
 compartilhado, aproximando o próprio kernel a idea de um sistema distribuído~\cite{baumann2009multikernel,wentzlaff2009fos}.
 
+% Definindo os tipos de multikernel
+Desde então, duas maneiras de subdividir logicamente os núcleos foram muito exploradas.
+A primeira reestrutura o SO por completo, como no Barrelfish, que executa um kernel por núcleo~\cite{baumann2009multikernel}.
+A segunda, linha adotada por este trabalho, particiona a máquina física
+entre múltiplas instâncias de kernel independentes, com seus próprios núcleos e região de memória,
+tendo a possibilidade de possuir diferentes configurações e ajustes finos.
+Essa linha surgiu tendo em vista computação de alta performance (HPC), com sistemas que executam kernels leves ao lado do Linux~\cite{shimosawa2014ihk,park2012fusedos,gerofi2016survey},
+e foi recentemente proposta para o próprio Linux, que passa a carregar instâncias independentes sobre núcleos e memória reservados, com realocação em tempo de
+execução~\cite{wang2025multikernel,wang2025lpc}.
+Nesse modelo, um kernel hospedeiro particiona os recursos e inicia as
+instâncias, que se comunicam por troca de mensagens explícitas e por regiões de memória compartilhada, além disso, acessam
+o restante do hardware, em geral, por meio de dispositivos virtuais fornecidos pelo kernel hospedeiro.
+Neste trabalho, \textit{instância multikernel} está relacionada a este conjunto de objetos, sendo eles: núcleos dedicados, uma região de memória própria,
+uma imagem de aplicação e uma configuração própria de kernel.
 
+% Multikernel como meio-termo entre containers e máquinas virtuais
+A arquitetura multikernel ocupa um ponto único entre as duas formas de subdividir recursos que hoje são amplamente utilizadas.
+Containers são unidades executáveis de código que empacotam uma aplicação e suas dependências, utilizando mecanismos do próprio SO, como \textit{namespaces} e \textit{cgroups},
+para dividir recursos e limita-los.
+Containers são leves, porém compartilham o kernel do hospedeiro, isso amplia a superfície de ataque entre
+as aplicações e as deixam sujeitas à interferência de vizinhos (\textit{noisy neighbors}).
+Por outro lado, Máquinas virtuais (VMs) executam um kernel
+próprio sobre um hipervisor e oferecem isolamento mais forte, ao custo de um \textit{overhead} pela comunicação hóspede-hospedeiro,
+E/S e acesso à memória, ou seja, possui consumo maior de recursos por instância.
+Dessa forma, uma instância multikernel entra como terceira via.
+Ela também executa um kernel próprio, mas diretamente sobre os núcleos físicos, sem possuir a camada de virtualização de CPU e memória das VMs, o que favorece
+um desempenho previsível e permite a especialização do kernel para cargas específicas de trabalho.
+Por outro lado, a alocação tem granularidade de núcleos por inteiro e o isolamento de segurança entre as instâncias fica dependente dos mecanismos
+de hardware da máquina.
 
+% Pontuar sistemas distribuídos e orquestração como fator de adoção principal, reforçar que multikernel é restrito à uma única máquina
+A adoção de containers e VMs em larga escala está fortemente ligada com a criação de orquestradores que gerenciam essas
+unidades, dando destaque para a linha que foi do Borg ao
+Kubernetes~\cite{burns2016borg}.
+As ferramentas existentes para multikernel, por outro lado, como a IHK~\cite{shimosawa2014ihk} e o kerf~\cite{multikernel2025kerf},
+oferecem mecanismos para criar, configurar, monitorar e destruir instâncias, similares a ferramentas para containers como o \textit{docker compose},
+mas operam sobre uma única máquina, sem definir políticas sobre onde e quando essas instâncias devem ser criadas.
+Sem uma camada de orquestração robusta, a arquitetura tende a permanecer restrita a experimentos locais e teóricos, distante de
+ambientes distribuídos de produção como a nuvem, \textit{fog computing} e a computação de borda.
 
-% Soluções: containers (kernel compartilhado, segurança fraca) vs VMs (overhead de hypervisor, isolamento maior)
-Duas maneiras de subdividir logicamente esses núcleos são amplamente adotadas hoje em dia.
-Containers são unidades executáveis de código que empacotam uma aplicação e suas dependências, tirando proveito da virtualização
-do SO, na qual recursos como \textit{namespaces} e \textit{cgroups} (Linux) podem ser utilizados para subdividir memória, disco e quantidade de CPU.
-A outra alternativa são as máquinas virtuais, que utilizam outra forma de virtualização, na qual um \textit{hypervisor} realiza a comunicação
-entre os sistemas operacionais hóspedes e o hospedeiro, dando flexibilidade às aplicações que podem ser executadas naquela máquina.
-Contudo, ambas as soluções têm contrapartidas: enquanto as máquinas virtuais garantem alto isolamento entre os SOs hospedados, elas
-possuem um \textit{overhead} significativo na comunicação destes com o kernel que os hospeda, por conta da tradução do \textit{hypervisor};
-os containers, por sua vez, são unidades muito mais leves, mas possuem menor isolamento de segurança e podem ser \textit{noisy neighbors}.
+% Proposta K-ORCH transicionando para o tema
+Sendo assim, este trabalho propõe a ferramenta K-ORCH, um orquestrador para instâncias multikernel em nós distribuídos, capaz de
+suprir as especificidades desta arquitetura emergente.
+K-ORCH recebe pedidos de
+instâncias descritos com o estado desejado, escolhe um nó de destino com base nos núcleos e memória disponível, delega a
+um agente em cada nó o particionamento dos recursos e a inicialização da instância,
+além de monitorar as instâncias para detectar e recuperar falhas.
+A proposta será avaliada quanto ao tempo de
+provisionamento, ao custo do plano de controle, à densidade e à interferência de desempenho entre instâncias,
+em comparação com microVMs orquestradas.
 
-% Multikernel como meio-termo: modelo instâncias particionadas (Linux multikernel)
-Nesse contexto, a arquitetura multikernel tem o objetivo de reduzir esses problemas na origem: com kernels executando em
-núcleos fisicamente separados, o multikernel garante ainda mais isolamento que as máquinas virtuais, sem o \textit{overhead}
-de tradução do \textit{hypervisor}.
-O compartilhamento do hardware é geralmente feito por um kernel pai, que utiliza dispositivos virtuais nos kernels trabalhadores,
-juntamente com a comunicação por um sistema de troca de mensagens e por regiões específicas de memória compartilhada.
+% Paragrafo de organização e apresentação do documento
+O restante deste documento está organizado da seguinte forma. A Seção~\ref{sec:just} apresenta a justificativa do
+trabalho, a pergunta de pesquisa (Seção~\ref{sec:pergunta}), os objetivos gerais (Seção~\ref{sec:objetivos}) e específicos(Seção~\ref{subsec:objetivo-especificos}).
+A Seção~\ref{sec:related} discute os trabalhos relacionados, e a Seção~\ref{sec:methods} descreve a metodologia.
+Por fim, a Seção~\ref{sec:results} apresenta os resultados esperados, e a Seção~\ref{sec:crono}, o cronograma
+de dois anos para a realização do trabalho.
 
-% Pontuar sistemas distribuidos, Orquestração como fator de adoção (containers -> K8s) ligando com containers, VMs e orquestração de grandes sistemas
-% mostrar que multikernel hoje é restrito a uma máquina somente
-Atualmente, as soluções de containers e máquinas virtuais estão fortemente interligadas a sistemas distribuídos. A adoção
-dessas tecnologias veio em conjunto com ferramentas de orquestração poderosas, como o Kubernetes, possibilitando sua ampliação
-para sistemas de grande porte.
-Do mesmo modo, a arquitetura multikernel tem grande potencial em ambientes distribuídos, como \textit{fog computing} e nuvem; contudo,
-atualmente as aplicações multikernel estão restritas a uma única máquina física, por conta da falta de um orquestrador
-que realize a administração dessas instâncias.
-
-% Proposta (K-ORCH) transição para o tema (multikernel em ambientes distribuidos x orquestrador)
-Assim, seria necessária a criação de um orquestrador capaz de suprir as especificidades dessa arquitetura emergente
-em ambientes distribuídos, tornando-a uma solução viável para situações em que o isolamento das VMs e a leveza dos containers,
-juntos, sejam de extrema importância para a aplicação em execução.
-
-% Paragrafo de organização "Este doc..."
-Ao longo deste trabalho, serão apresentadas as justificativas para a criação de um orquestrador multikernel (Seção~\ref{sec:just}),
-será formulada e explorada a pergunta central da pesquisa (Seção~\ref{sec:pergunta}) e serão citados os objetivos geral e específicos
-desse novo orquestrador (Seção~\ref{sec:objetivos}).
-Em seguida, a Seção~\ref{sec:related} mostrará a evolução da arquitetura e os trabalhos relacionados à sua
-evolução para ambientes distribuídos, e a Seção~\ref{sec:methods} apresentará as abordagens e o nível da pesquisa.
-Por último, serão especificados os resultados esperados ao concluir a construção do orquestrador K-ORCH (Seção~\ref{sec:results})
-e um planejamento de dois anos para a realização do trabalho (Seção~\ref{sec:crono}).
+%% TODO TODO TODO FROM HERE!
 
 \section{Justificativa e Motivação} \label{sec:just}
 
