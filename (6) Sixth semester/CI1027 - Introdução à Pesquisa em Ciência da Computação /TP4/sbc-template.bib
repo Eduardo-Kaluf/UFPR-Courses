@@ -25,21 +25,35 @@
   editor = 	 {A. B. Smith-Jones}
 }
 
-@inproceedings{boydwickizer2010mosbench,
-  author = {Boyd-Wickizer, Silas and Clements, Austin T. and Mao, Yandong and Pesterev, Aleksey and Kaashoek, M. Frans and Morris, Robert and Zeldovich, Nickolai},
-  title = {An Analysis of {Linux} Scalability to Many Cores},
-  booktitle = {USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, year = {2010}}
+%%%%% TP4
+
+%%%%% Introdução
+
+@conference{boydwickizer2010mosbench,
+  author    = {S. Boyd-Wickizer and A. T. Clements and Y. Mao and A. Pesterev and M. F. Kaashoek and R. Morris and N. Zeldovich},
+  title     = {An Analysis of {Linux} Scalability to Many Cores},
+  booktitle = {9$^{th}$ USENIX Symposium on Operating Systems Design and Implementation ({OSDI})},
+  address   = {Vancouver - BC, Canada},
+  month     = {October},
+  year      = {2010}
+}
 
 @article{burns2016borg,
-  author = {Burns, Brendan and Grant, Brian and Oppenheimer, David and Brewer, Eric and Wilkes, John},
-  title = {{Borg}, {Omega}, and {Kubernetes}},
-  journal = {ACM Queue}, volume = {14}, number = {1}, year = {2016}}
+  author   = {B. Burns and B. Grant and D. Oppenheimer and E. Brewer and J. Wilkes},
+  title    = {{Borg}, {Omega}, and {Kubernetes}},
+  journal  = {ACM Queue},
+  volume   = {14},
+  number   = {1},
+  year     = {2016}
+}
 
 @misc{amd2024epyc,
-  author = {{AMD}},
-  title = {{AMD EPYC} 9005 Series Processors},
+  author       = {{AMD}},
+  title        = {{AMD EPYC} 9005 Series Processors},
   howpublished = {Página do produto},
-  note = {Acesso em: out. 2026}}
+  year         = {2024},
+  note         = {Acessado em 23/10/2026}
+}
 
 %%%%% Multikernel
 
@@ -144,6 +158,15 @@
   year      = {2016}
 }
 
+@conference{gerofi2016mckernel,
+  author    = {B. Gerofi and M. Takagi and A. Hori and G. Nakamura and T. Shirasawa and Y. Ishikawa},
+  title     = {On the Scalability, Performance Isolation and Device Driver Transparency of the {IHK/McKernel} Hybrid Lightweight Kernel},
+  booktitle = {IEEE International Parallel and Distributed Processing Symposium ({IPDPS})},
+  address   = {Chicago - IL, USA},
+  month     = {May},
+  year      = {2016}
+}
+
 @techreport{beckmann2014pika,
   author      = {N. Z. Beckmann and C. {Gruenwald III} and C. R. Johnson and H. Kasture and F. Sironi and A. Agarwal and M. F. Kaashoek and N. Zeldovich},
   title       = {{PIKA}: A Network Service for Multikernel Operating Systems},
@@ -154,13 +177,29 @@
   year        = {2014}
 }
 
-@misc{kuo2019multik,
-  author       = {H.-C. Kuo and A. Gunasekaran and Y. Jang and S. Mohan and R. B. Bobba and D. Lie and J. Walker},
-  title        = {{MultiK}: A Framework for Orchestrating Multiple Specialized Kernels},
-  howpublished = {\url{https://arxiv.org/abs/1903.06889}},
-  month        = {March},
-  year         = {2019},
-  note         = {arXiv:1903.06889. Acessado em 10/10/2026}
+@misc{wang2025multikernel,
+  author       = {C. Wang},
+  title        = {[{RFC} Patch 0/7] kernel: Introduce Multikernel Architecture Support},
+  howpublished = {\url{https://lore.kernel.org/lkml/20250918222607.186488-1-xiyou.wangcong@gmail.com/}},
+  month        = {September},
+  year         = {2025},
+  note         = {Linux Kernel Mailing List. Acessado em 10/10/2026}
+}
+
+@misc{wang2025lpc,
+  author       = {C. Wang},
+  title        = {Multikernel: Kernel-to-Kernel Isolation with Elastic Resource Management},
+  howpublished = {\url{https://lpc.events/event/19/contributions/2074/}},
+  year         = {2025},
+  note         = {Linux Plumbers Conference. Acessado em 10/10/2026}
+}
+
+@misc{multikernel2025kerf,
+  author       = {{Multikernel Technologies}},
+  title        = {kerf: Multikernel Management System},
+  howpublished = {\url{https://github.com/multikernel/kerf}},
+  year         = {2025},
+  note         = {Acessado em 10/10/2026}
 }
 
 %%%%% Orquestração e balanceamento de carga
@@ -198,17 +237,6 @@
   year     = {2001}
 }
 
-@article{blumofe1999work,
-  author   = {R. D. Blumofe and C. E. Leiserson},
-  title    = {Scheduling Multithreaded Computations by Work Stealing},
-  journal  = {Journal of the ACM},
-  volume   = {46},
-  number   = {5},
-  pages    = {720-748},
-  month    = {September},
-  year     = {1999}
-}
-
 @article{swetha2025resource,
   author   = {R. Swetha and J. Thriveni and K. R. Venugopal},
   title    = {Resource Utilization-Based Container Orchestration: Closing the Gap for Enhanced Cloud Application Performance},
@@ -238,29 +266,50 @@
   year      = {2015}
 }
 
-@misc{wang2025multikernel,
-  author       = {C. Wang},
-  title        = {[{RFC} Patch 0/7] kernel: Introduce Multikernel Architecture Support},
-  howpublished = {\url{https://lore.kernel.org/lkml/20250918222607.186488-1-xiyou.wangcong@gmail.com/}},
-  month        = {September},
-  year         = {2025},
-  note         = {Linux Kernel Mailing List. Acessado em 10/10/2026}
+%%%%% Isolamento, microVMs e vulnerabilidades
+
+@conference{lo2015heracles,
+  author    = {D. Lo and L. Cheng and R. Govindaraju and P. Ranganathan and C. Kozyrakis},
+  title     = {{Heracles}: Improving Resource Efficiency at Scale},
+  booktitle = {42$^{nd}$ International Symposium on Computer Architecture ({ISCA})},
+  address   = {Portland - OR, USA},
+  pages     = {450-462},
+  month     = {June},
+  year      = {2015}
 }
 
-@misc{wang2025lpc,
-  author       = {C. Wang},
-  title        = {Multikernel: Kernel-to-Kernel Isolation with Elastic Resource Management},
-  howpublished = {\url{https://lpc.events/event/19/contributions/2074/}},
-  year         = {2025},
-  note         = {Linux Plumbers Conference. Acessado em 10/10/2026}
+@conference{agache2020firecracker,
+  author    = {A. Agache and M. Brooker and A. Florescu and A. Iordache and A. Liguori and R. Neugebauer and P. Piwonka and D.-M. Popa},
+  title     = {{Firecracker}: Lightweight Virtualization for Serverless Applications},
+  booktitle = {17$^{th}$ USENIX Symposium on Networked Systems Design and Implementation ({NSDI})},
+  address   = {Santa Clara - CA, USA},
+  pages     = {419-434},
+  month     = {February},
+  year      = {2020}
 }
 
-@misc{multikernel2025kerf,
-  author       = {{Multikernel Technologies}},
-  title        = {kerf: Multikernel Management System},
-  howpublished = {\url{https://github.com/multikernel/kerf}},
-  year         = {2025},
-  note         = {Acessado em 10/10/2026}
+@misc{katacontainers,
+  author       = {{OpenInfra Foundation}},
+  title        = {{Kata Containers}: The Speed of Containers, the Security of {VMs}},
+  howpublished = {\url{https://katacontainers.io}},
+  year         = {2026},
+  note         = {Acessado em 23/10/2026}
+}
+
+@misc{cve20195736,
+  author       = {{NIST}},
+  title        = {{CVE-2019-5736}: runc container breakout},
+  howpublished = {\url{https://nvd.nist.gov/vuln/detail/CVE-2019-5736}},
+  year         = {2019},
+  note         = {National Vulnerability Database. Acessado em 23/10/2026}
+}
+
+@misc{cve202421626,
+  author       = {{NIST}},
+  title        = {{CVE-2024-21626}: runc container breakout},
+  howpublished = {\url{https://nvd.nist.gov/vuln/detail/CVE-2024-21626}},
+  year         = {2024},
+  note         = {National Vulnerability Database. Acessado em 23/10/2026}
 }
 
 %%%%% Observabilidade e monitoramento
@@ -306,26 +355,6 @@
   year      = {2014}
 }
 
-@article{kvalnes2015omni,
-  author   = {{\AA}. Kvalnes and D. Johansen and R. {van Renesse} and F. B. Schneider and S. V. Valv{\aa}g},
-  title    = {{Omni-Kernel}: An Operating System Architecture for Pervasive Monitoring and Scheduling},
-  journal  = {IEEE Transactions on Parallel and Distributed Systems},
-  volume   = {26},
-  number   = {10},
-  pages    = {2849-2862},
-  month    = {October},
-  year     = {2015}
-}
-
-@conference{west2009coremonitors,
-  author    = {P. E. West and Y. Peress and G. S. Tyson and S. A. McKee},
-  title     = {Core Monitors: Monitoring Performance in Multicore Processors},
-  booktitle = {6$^{th}$ ACM Conference on Computing Frontiers ({CF})},
-  address   = {Ischia - Italy},
-  month     = {May},
-  year      = {2009}
-}
-
 %%%%% Disponibilidade e isolamento
 
 @conference{ouyang2015pisces,
@@ -336,14 +365,4 @@
   pages     = {149-160},
   month     = {June},
   year      = {2015}
-}
-
-@conference{vanthof2022blackbox,
-  author    = {A. {Van't Hof} and J. Nieh},
-  title     = {{BlackBox}: A Container Security Monitor for Protecting Containers on Untrusted Operating Systems},
-  booktitle = {16$^{th}$ USENIX Symposium on Operating Systems Design and Implementation ({OSDI})},
-  address   = {Carlsbad - CA, USA},
-  pages     = {683-700},
-  month     = {July},
-  year      = {2022}
 }
