@@ -63,9 +63,9 @@
 O número de núcleos por processador cresce incessantemente, e processadores já chegam a ultrapassar uma
 centena de núcleos em um único chip~\cite{amd2024epyc}.
 Os sistemas operacionais monolíticos, projetados em torno de estruturas de dados e controle compartilhadas por todos os núcleos, acompanharam esse crescimento à custa de mecanismos cada
-vez mais complexos, como travas de granularidade fina, estruturas de dados especificas por núcleo e políticas de afinidade e
+vez mais complexos, como travas de granularidade fina, estruturas de dados específicas por núcleo e políticas de afinidade e
 isolamento de CPUs~\cite{boydwickizer2010mosbench}. Essas soluções aumentam a complexidade, a superfície do kernel,
-e tornam o compartilhamento de estado entre núcleos seja um \textit{bottleneck} para o desempenho e escalabilidade~\cite{boydwickizer2008corey}.
+e tornam o compartilhamento de estado entre núcleos um \textit{bottleneck} para o desempenho e escalabilidade~\cite{boydwickizer2008corey}.
 Nesse contexto, surge a arquitetura multikernel, propondo tratar a máquina como uma rede de núcleos independentes,
 com estado replicado e comunicação explícita por mensagens, em vez de um único kernel com estado
 compartilhado, aproximando o próprio kernel a idea de um sistema distribuído~\cite{baumann2009multikernel,wentzlaff2009fos}.
@@ -82,16 +82,16 @@ execução~\cite{wang2025multikernel,wang2025lpc}.
 Nesse modelo, um kernel hospedeiro particiona os recursos e inicia as
 instâncias, que se comunicam por troca de mensagens explícitas e por regiões de memória compartilhada, além disso, acessam
 o restante do hardware, em geral, por meio de dispositivos virtuais fornecidos pelo kernel hospedeiro.
-Neste trabalho, \textit{instância multikernel} está relacionada a este conjunto de objetos, sendo eles: núcleos dedicados, uma região de memória própria,
-uma imagem de aplicação e uma configuração própria de kernel.
+Neste trabalho, \textit{instância multikernel} está relacionada a este conjunto de objetos: núcleos dedicados, uma região de memória própria,
+uma imagem da aplicação e uma configuração própria de kernel.
 
 % Multikernel como meio-termo entre containers e máquinas virtuais
-A arquitetura multikernel ocupa um ponto único entre as duas formas de subdividir recursos que hoje são amplamente utilizadas.
+Ademais, a arquitetura multikernel ocupa um ponto único entre as duas formas de subdividir recursos que hoje são amplamente utilizadas.
 Containers são unidades executáveis de código que empacotam uma aplicação e suas dependências, utilizando mecanismos do próprio SO, como \textit{namespaces} e \textit{cgroups},
-para dividir recursos e limita-los.
+para dividir recursos e limitá-los.
 Containers são leves, porém compartilham o kernel do hospedeiro, isso amplia a superfície de ataque entre
 as aplicações e as deixam sujeitas à interferência de vizinhos (\textit{noisy neighbors}).
-Por outro lado, Máquinas virtuais (VMs) executam um kernel
+Por outro lado, VMs executam um kernel
 próprio sobre um hipervisor e oferecem isolamento mais forte, ao custo de um \textit{overhead} pela comunicação hóspede-hospedeiro,
 E/S e acesso à memória, ou seja, possui consumo maior de recursos por instância.
 Dessa forma, uma instância multikernel entra como terceira via.
@@ -116,14 +116,14 @@ suprir as especificidades desta arquitetura emergente.
 K-ORCH recebe pedidos de
 instâncias descritos com o estado desejado, escolhe um nó de destino com base nos núcleos e memória disponível, delega a
 um agente em cada nó o particionamento dos recursos e a inicialização da instância,
-além de monitorar as instâncias para detectar e recuperar falhas.
+além de monitorar as instâncias a fim de detectar e recuperar falhas.
 A proposta será avaliada quanto ao tempo de
 provisionamento, ao custo do plano de controle, à densidade e à interferência de desempenho entre instâncias,
 em comparação com microVMs orquestradas.
 
 % Paragrafo de organização e apresentação do documento
 O restante deste documento está organizado da seguinte forma. A Seção~\ref{sec:just} apresenta a justificativa do
-trabalho, a pergunta de pesquisa (Seção~\ref{sec:pergunta}), os objetivos gerais (Seção~\ref{sec:objetivos}) e específicos(Seção~\ref{subsec:objetivo-especificos}).
+trabalho, a pergunta de pesquisa (Seção~\ref{sec:pergunta}), os objetivos gerais (Seção~\ref{sec:objetivos}) e específicos (Seção~\ref{subsec:objetivo-especificos}).
 A Seção~\ref{sec:related} discute os trabalhos relacionados, e a Seção~\ref{sec:methods} descreve a metodologia.
 Por fim, a Seção~\ref{sec:results} apresenta os resultados esperados, e a Seção~\ref{sec:crono}, o cronograma
 de dois anos para a realização do trabalho.
@@ -135,14 +135,14 @@ A disputa entre isolamento e desempenho descrito na Seção~\ref{sec:introducao}
 multi-tenant.
 Vulnerabilidades de escape de containers, como a CVE-2019-5736 e a CVE-2024-21626 \cite{cve20195736,cve202421626},
 deixam evidente o risco de compartilhar o mesmo kernel entre cargas de diferentes clientes.
-Além disso, interferência entre cargas leva provedores a manter servidores subutilizados, a fim de
+Além disso, interferência entre cargas leva provedores a manter seus servidores subutilizados, com o intuito de
 preservar a latência de serviços críticos~\cite{lo2015heracles}.
 A indústria e a academia buscam soluções intermediárias
 para lidar com esses problemas, como o Firecracker~\cite{agache2020firecracker}, desenvolvido para executar funções e
-containers de diferentes clientes em microVMs, e o Kata Containers~\cite{katacontainers}, que executa cada \textit{pod}
+containers de diferentes clientes em microVMs, e o Kata Containers~\cite{katacontainers}, que executa cada \textit{pod} (unidade básico do \textit{Kubernetes})
 em uma máquina virtual leve.
 Esses esforços indicam que há demanda por alternativas aos dois modelos tradicionais, onde a arquitetura multikernel possui muito
-espaço para se estabilizar como terceira via.
+espaço para se estabilizar como uma terceira opção.
 
 % Para quem, cenários onde só o multikernel atende
 O multikernel é uma vantagem enorme para aplicações de larga escala em que configurações específicas do SO
@@ -162,11 +162,12 @@ camada equivalente.
 Mais que isso, do ponto de vista científico, caracterizar os custos e limites dessa orquestração é uma contribuição
 por si só, independentemente de como a arquitetura se comportar nos critérios propostos.
 
-Uma alternativa à construção de um orquestrador próprio seria integrar instâncias multikernel ao Kubernetes por meio
+Uma alternativa à construção de um orquestrador próprio seria integrar instâncias multikernel ao \textit{Kubernetes} por meio
 de uma API compatível com suas interfaces, de forma parecido ao que o Kata Containers realiza com suas VMs leves.
 Este trabalho opta por explorar um orquestrador dedicado principalmente porque o posicionamento depende de recursos físicos, como núcleos livres e
-memória reservada, e esse particionamento se pretende investigar sem estar amarrado a uma plataforma existente, ademais, um protótipo independente permite
-medir o custo da orquestração de forma isolada, com menos interferências e mais corretude do todo.
+memória reservada.
+Por isso, pretende-se investigar o particionamento sem estar amarrado a uma plataforma existente, além de que, um protótipo independente permite
+medir o custo da orquestração de forma isolada, com menos interferência e maior corretude.
 
 \subsection{Pergunta de Pesquisa} \label{sec:pergunta}
 % Quais mecanismos são necessários para provisionar, posicionar e monitorar
@@ -193,10 +194,10 @@ posicionar e monitorar instâncias multikernel em múltiplos nós.
   projetar o agente responsável por instanciar as unidades multikernel a partir do kernel hospedeiro de cada nó
   e definir o modelo de comunicação entre os agentes e orquestrador.
   \item Implementar o ciclo de vida e o posicionamento das instâncias: implementar a criação, inicialização, parada e
-  remoção das instâncias e os mecanismos para posicionamento, responsável por escolher o nó que atenderá
+  remoção das instâncias e o mecanismo para posicionamento, responsável por escolher o nó que atenderá
   cada requisição com base nos núcleos livres e na memória disponível.
-  \item Desenvolver o modelo de particionamento de recursos: implementar um modelo híbrido, o qual permita reservar regiões de memória e CPU na
-  inicialização de cada nó e também particionar dinamicamente a cada requisição conforme o necessário.
+  \item Desenvolver o modelo de particionamento de recursos: implementar um modelo híbrido, o qual permita a escolha entre reservar regiões de memória e CPU na
+  inicialização de cada nó ou particionar dinamicamente a cada requisição.
   \item Implementar o monitoramento das instâncias: coletar métricas das máquinas do estado e do uso de recursos de cada nó,
   detectar falhas e perda de comunicação com o agente, utilizando o monitoramento para realizar a recuperação de instâncias com erros,
   reposicionando ou reiniciando conforme necessário.
@@ -262,32 +263,37 @@ com múltiplos nós.
 Mais recentemente, a proposta de suporte a múltiplas instâncias do Linux em uma mesma máquina~\cite{wang2025multikernel}
 carrega as instâncias via \textit{kexec}, atribuindo a cada uma núcleos e memória que podem ser realocados em tempo de
 execução por meio de uma \textit{device tree} e do mecanismo de \textit{hotplug}~\cite{wang2025lpc}.
-Essa é a plataforma-alvo prevista para o K-ORCH.
+Essa é a implementação da arquitetura prevista para o K-ORCH.
 
 % ---------------------------------------------------------------------
-\subsection{Balanceamento, observabilidade e isolamento}
+\subsection{Balanceamento, observabilidade, isolamento e conceitos fundamentais}
 \label{sec:rel-fundamentos}
 
 Decidir onde executar cada carga é um problema estudado há muito tempo em sistemas distribuídos.
 Casavant e Kuhl~\cite{casavant1988taxonomy} propõem uma taxonomia hierárquica de escalonamento que distingue
 abordagens estáticas de dinâmicas e classifica estas quanto à distribuição da responsabilidade pelas decisões e à
-cooperação entre os nós. Shivaratri et al.~\cite{shivaratri1992load} decompõem os algoritmos de distribuição de carga
+cooperação entre os nós.
+Shivaratri et al.~\cite{shivaratri1992load} decompõem os algoritmos de distribuição de carga
 em quatro políticas: de transferência (quando mover uma tarefa), de seleção (qual tarefa mover), de localização
-(para onde mover) e de informação (quando coletar o estado dos nós). Como o K-ORCH não migra instâncias entre nós,
-o problema se concentra nas políticas de localização e de informação. Nesse ponto, Mitzenmacher~\cite{mitzenmacher2001power}
+(para onde mover) e de informação (quando coletar o estado dos nós).
+Mitzenmacher~\cite{mitzenmacher2001power}
 mostra que escolher a opção menos carregada entre apenas dois destinos aleatórios reduz exponencialmente a carga
 máxima esperada em relação à escolha puramente aleatória, resultado que fundamenta políticas simples e escaláveis.
 
 Nos sistemas com múltiplos kernels, desde o início foi necessário decidir como distribuir os recursos da máquina
-entre as instâncias. No Hive, os mecanismos de compartilhamento são implementados pela cooperação entre as células,
+entre as instâncias.
+No Hive, os mecanismos de compartilhamento são implementados pela cooperação entre as células,
 mas a política é atribuída a um processo de usuário, o único com visão global do sistema, responsável por decidir
-de quais células alocar memória e como escalonar processos~\cite{chapin1995hive}. No Disco, o monitor aplica
+de quais células alocar memória e como escalonar processos~\cite{chapin1995hive}.
+No Disco, o monitor aplica
 políticas globais sobre as máquinas virtuais, movendo memória entre elas e escalonando dinamicamente as vCPUs
-para equilibrar a carga~\cite{bugnion1997disco}; o Cellular Disco combina um balanceador ocioso, que usa apenas
+para equilibrar a carga~\cite{bugnion1997disco}.
+O Cellular Disco combina um balanceador ocioso, que usa apenas
 informação local, com um balanceador periódico, que consulta uma árvore de carga global~\cite{govil2000cellular}.
 No Barrelfish, uma base de conhecimento reúne informações do hardware e medições em tempo de execução, respondendo
 a consultas de otimização, como a alocação de drivers a núcleos~\cite{baumann2009multikernel,schupbach2008diversity}.
-Nos multikernels com foco em HPC, a gerência tende a ser exposta como uma interface: na IHK, o kernel mestre assume
+Nos multikernels com foco em HPC, a gerência tende a ser exposta como uma interface.
+Na IHK, o kernel mestre assume
 o controle do mapeamento da memória física e oferece operações para reservar núcleos e memória, inicializar,
 consultar, desligar e destruir instâncias, porém não define políticas sobre quando utilizá-las~\cite{shimosawa2014ihk}.
 
@@ -309,8 +315,8 @@ para orientar suas escolhas~\cite{beckmann2014pika}. Porém, essa informação �
 sem compartilhamento entre os nós de um cluster.
 
 Uma grande motivação para dividir o sistema em múltiplos kernels é a disponibilidade das aplicações. No Hive, uma
-falha de hardware ou de software afeta apenas os processos que usam os recursos da célula prejudicada; o sistema
-protege cada página contra escritas de outras células, descarta preventivamente as páginas que uma célula falha
+falha de hardware ou de software afeta apenas os processos que usam os recursos da célula prejudicada.
+O sistema protege cada página contra escritas de outras células, descarta preventivamente as páginas que uma célula falha
 poderia ter corrompido e detecta falhas por heurísticas, cuja confirmação exige consenso das células
 sobreviventes~\cite{chapin1995hive}. O Disco trata cada máquina virtual como unidade de contenção de falhas de
 software~\cite{bugnion1997disco}, e o Cellular Disco estende essa contenção a falhas de hardware: em centenas de
@@ -318,23 +324,21 @@ experimentos com injeção de falhas, a recuperação foi bem-sucedida em todos 
 segundo~\cite{govil2000cellular}. Além de conter falhas, a divisão em múltiplos kernels também é usada para isolar
 o desempenho das aplicações. O Pisces~\cite{ouyang2015pisces} permite a coexistência, em um mesmo nó, de múltiplos
 ambientes de SO independentes, denominados enclaves, cada um executando um co-kernel leve que gerencia uma partição
-de recursos de hardware, tratando o isolamento de desempenho como requisito principal. Dedicar núcleos, porém, não
-elimina toda a interferência: cargas que compartilham um servidor disputam também a cache de último nível e a largura
-de banda de memória~\cite{lo2015heracles}, aspecto considerado na avaliação deste trabalho.
+de recursos de hardware, tratando o isolamento de desempenho como requisito principal.
 
 % ---------------------------------------------------------------------
 \subsection{Orquestração}
 \label{sec:rel-orquestracao}
 
-Os orquestradores atuais derivam em grande parte da experiência do Google com o Borg, cujas lições foram
-consolidadas no Kubernetes em um modelo declarativo: o usuário descreve o estado desejado, e laços de controle
-reconciliam continuamente o estado observado com ele~\cite{burns2016borg}, modelo também adotado pelo K-ORCH.
+Os orquestradores atuais sofreram enorme influência da experiência do Google com o Borg, o qual foi
+consolidado no Kubernetes em um modelo declarativo, isto é, o usuário descreve o estado desejado, e laços de controle
+reconciliam continuamente o estado que está sendo observado com ele~\cite{burns2016borg}.
 Uma revisão de orquestradores como Kubernetes, Docker Swarm e Apache Mesos identifica a escassez de propostas de
 orquestração orientada pela utilização de recursos e compara a adequação de cada ferramenta~\cite{swetha2025resource}.
 Na mesma linha, uma implantação de contêineres em dois estágios distribui contêineres entre máquinas virtuais com
 granularidade grossa por meio de um algoritmo guloso, enquanto um algoritmo genético reparte os recursos dentro de
-cada máquina virtual~\cite{lu2025optimized}, estrutura semelhante à escolha de nó seguida do particionamento local
-adotada neste trabalho.
+cada máquina virtual~\cite{lu2025optimized}, estrutura similar a escolher um nó e em seguida realizar o particionamento local,
+algo que será adotado neste trabalho.
 
 Para cargas que exigem isolamento mais forte que o de contêineres, a abordagem predominante é integrar máquinas
 virtuais leves aos orquestradores existentes. O Firecracker~\cite{agache2020firecracker} é um monitor de máquinas
@@ -351,9 +355,9 @@ de um orquestrador, mas limitada a uma única máquina.
 
 \section{Metodologia} \label{sec:methods}
 
-A metodologia utilizada por este trabalho tem caráter teórico-prático, combinando análise de algoritmos a fim e mecanismos de
-orquestração com sua implementação e avaliação experimental.
-A abordagem quantitativa é quantitativa, baseada em identificar os benefícios e comparar o desempenho
+A metodologia utilizada por este trabalho tem caráter teórico-prático, combinando análise de algoritmos e mecanismos de
+orquestração, com suas respectivas implementações e uma avaliação experimental.
+A abordagem é quantitativa, baseada em identificar os benefícios e comparar o desempenho
 entre aplicações utilizando medições do comportamento do orquestrador e de instâncias sob cargas controladas.
 Por último, o nível da pesquisa é exploratório, testando e verificando diferentes possibilidades que
 possam ser utilizadas para gerenciar esse novo tipo de tecnologia, dado que a orquestração distribuída da arquitetura
@@ -361,7 +365,7 @@ multikernel ainda não foi documentada na literatura.
 
 
 % Definir instancia do multikernel
-\subsection{Caracterizar e definir unidade orquestrável}
+\subsection{Caracterizar e definir a unidade orquestrável}
 
 Na primeira etapa será levantado o estado da arte e a definição da unidade orquestrável.
 A plataforma multikernel será estudada experimentalmente quanto ao tempo de inicialização, à forma de reserva dos núcleos e
@@ -375,7 +379,7 @@ dedicados, região de memória, imagem e configuração do kernel) e o modelo de
 A segunda etapa realiza os objetivos de projeto da arquitetura e de implementação do ciclo de vida e do posicionamento.
 O plano de controle será implementado a fim de receber pedidos de instâncias, descritos por estado.
 O agente, executado no kernel de cada nó, será comandado pelo plano de controle, realizando particionamento de recursos e a inicialização, parada e remoção das
-instâncias, reportando o estado de cada instância.
+instâncias, reportando o estado de cada uma delas.
 Inicialmente serão implementadas duas políticas básicas de posicionamento: \textit{first-fit} e a escolha de um nó menos
 carregado entre dois sorteados~\cite{mitzenmacher2001power}.
 
@@ -388,12 +392,12 @@ a cada pedido.
 O agente será um coletor periódico, abrangendo o estado e o uso de recursos de cada
 instância e dos nós, o plano de controle deve agregar essas informações e tomar decisões a partir delas.
 Falhas serão detectadas por ausência de sinais do agente e por eventos, a recuperação consistirá em reiniciar a instância
-no mesmo nó ou reposicioná-la em algum outro que esteja disponível.
+no mesmo nó ou reposicioná-la em algum outro que esteja disponível e saudável.
 
 % realizar análise quantitativa e comparativa da ferramenta
 \subsection{Análise e refinamentos}
 
-A quarta etapa consiste em fazer a avaliação e testar a ferramenta com experimentos específicos:
+A quarta etapa consiste em fazer a avaliação experimental e testar a ferramenta com experimentos específicos:
 \begin{itemize}
   \item \textbf{Provisionamento e custo do orquestrador:} tempo entre o pedido e resposta da instância,
   decomposto em particionamento, inicialização do kernel e avaliabilidade, comparado ao tempo de
@@ -414,20 +418,20 @@ multikernel em múltiplos nós.
 A proposta busca entender e explorar os melhores caminhos para as especificidades da arquitetura multikernel, criando
 essa ferramenta robusta para a orquestração de sistemas distribuídos.
 
-Almeja-se criar um histórico com os parâmetros utilizados e das maiores dificuldades para a realização da orquestração,
-mapeando e documentando, algoritmos, principais ideias, desempenho, entre outras métricas.
+Almeja-se também, criar um histórico com os parâmetros utilizados e das maiores dificuldades para a realização da orquestração,
+mapeando e documentando, algoritmos, principais ideias, desempenhoe e outras métricas.
 Dessa forma, também será possível oferecer uma caracterização dos custos e limites da orquestração distribuída de multikernel.
 
 \section{Cronograma} \label{sec:crono}
 
 A tabela \ref{tab:crono} apresenta o cronograma organizado em 8 trimestres.
-O trimestres um e dois tem como foco o estudo da plataforma multikernel e a definição formal da unidade orquestrável utilizada, criando
+Os trimestres um e dois tem como foco o estudo da plataforma multikernel e a definição formal da unidade orquestrável utilizada, criando
 um ambiente experimental reprodutível.
-Durante o terceiro e quarto trimestres será projetado o funcionamento geral do orquestrador, e então, implementando os agentes
+Os trimestres três e quatro serão utilizados para projetar o funcionamento geral do orquestrador, e então, implementar os agentes
 de orquestração a fim de realizar o ciclo de vida das aplicações e o posicionamento, tendo como marco uma unidade funcional de
-orquestração ao fim do ano.
+orquestração ao fim do ano, servindo como prova de conceito.
 Os trimestres cinco e seis serão dedicados para o particionamento de recursos, o monitoramento e a
-recuperação de instâncias, além da preparação do ambiente de comparação com microVMs
+recuperação de instâncias, além da preparação do ambiente para comparação com microVMs.
 Por último, nos trimestres sete e oito, será realizado testes e análises quanto ao desempenho da orquestração
 e das aplicações escolhidas, ou seja, uma avaliação experimental com foco em refinar o orquestrador e consolidar os resultados.
 
@@ -442,9 +446,9 @@ e das aplicações escolhidas, ou seja, uma avaliação experimental com foco em
     \hline
     Levantamento do estado da arte                                    & X & X &   &   &   &   &   &   \\
     Caracterização experimental da plataforma multikernel             & X & X &   &   &   &   &   &   \\
-    Definição da unidade orquestrável e do modelo de estado           &   & X &   &   &   &   &   &   \\
-    Projeto da arquitetura (plano de controle, agentes, comunicação)  &   &   & X &   &   &   &   &   \\
-    Implementação do ciclo de vida e do posicionamento das instâncias &   &   & X & X &   &   &   &   \\
+    Definição da unidade orquestrável e modelo de estado              &   & X &   &   &   &   &   &   \\
+    Projeto da arquitetura                                            &   &   & X &   &   &   &   &   \\
+    Implementação do ciclo de vida e do posicionamento                &   &   & X & X &   &   &   &   \\
     Implementação do particionamento de recursos                      &   &   &   &   & X & X &   &   \\
     Implementação do monitoramento e da recuperação de instâncias     &   &   &   &   & X & X &   &   \\
     Preparação do ambiente de avaliação e das microVMs de referência  &   &   &   &   & X & X &   &   \\
@@ -459,13 +463,13 @@ e das aplicações escolhidas, ou seja, uma avaliação experimental com foco em
 
 Este trabalho propõe o K-ORCH, um orquestrador que estende a gerência de instâncias multikernel, hoje restrita a uma
 única máquina, para ambientes com múltiplos nós.
-A proposta combina o model dos orquestradores atuais com
-os mecanismos de particionamento específicos da arquitetura multikernel e será avaliada diante microVMs orquestradas quanto ao
+A proposta combina o modelo dos orquestradores atuais com
+os mecanismos de particionamento específicos à arquitetura multikernel e será avaliada diante microVMs orquestradas quanto ao
 custo de provisionamento, à densidade e à interferência de desempenho entre instâncias.
 A contribuição esperada é proporcionar uma terceira via para ambientes que necessitam do melhor dos containers e das
 máquinas virtuais, proporcionando abstração suficiente a fim de escalar essa arquitetura para grandes sistemas de produção
 com facilidade e confiabilidade.
-Além de caracterizar custos e limites da orquestração distribuída do multikernel.
+Além disso, espera-se caracterizar custos e limites da orquestração distribuída da arquitetura multikernel.
 
 \bibliographystyle{sbc}
 
