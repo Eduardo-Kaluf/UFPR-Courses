@@ -4,60 +4,50 @@ using namespace std;
 
 using ll = long long;
 
-vector<ll> t[4 * 100015];
+const ll MOD = 1e9 + 7;
+const ll FER = MOD - 1;
 
-// [tl, tl)
-// v = index
-void build(const vector<ll>& a, ll v, ll tl, ll tr) {
-    if (tr - tl == 1) {
-        t[v] = vector<ll>(1, a[tl]);
-    } else { 
-        ll tm = (tl + tr) / 2;
-        build(a, v*2, tl, tm);
-        build(a, v*2+1, tm, tr);
-        merge(t[v*2].begin(), t[v*2].end(), t[v*2+1].begin(), t[v*2+1].end(),
-              back_inserter(t[v]));
-    }
+ll power(ll b, ll e) {
+	b %= MOD; ll r = 1;
+	for (; e > 0; e >>= 1, b = b * b % MOD)
+		if (e & 1) r = r * b % MOD;
+	return r;
 }
-
-ll query(ll v, ll tl, ll tr, ll l, ll r, ll x) {
-    if (r <= tl || tr <= l)
-        return 0;
-    if (l <= tl && tr <= r)
-        return upper_bound(t[v].begin(), t[v].end(), x) - t[v].begin();
-    ll tm = (tl + tr) / 2;
-    return query(v*2, tl, tm, l, r, x) + query(v*2+1, tm, tr, l, r, x);
-}
-
 
 int main () {
 	cin.tie(0)->sync_with_stdio(0);
 
-	ll n, q;
-    if (!(cin >> n >> q)) return 0;
+	int n;
+	cin >> n;
 
-    vector<ll> vec(n);
-    for (ll i = 0; i < n; i++)
-        cin >> vec[i];
+	ll cnt = 1;      // d(n) mod MOD
+	ll c = 1;     // d(n) mod (MOD-1), usado como expoente
+	ll sum = 1;
+	ll prod = 1;
 
-    build(vec, 1, 0, n);
+	for (int i = 0; i < n; ++i) {
+		ll x, k;
+		cin >> x >> k;
 
-    vector<ll> s = vec;
-    sort(s.begin(), s.end());
+		// Total divisores
+		// https://math.stackexchange.com/questions/433848/prime-factors-number-of-divisors
+		// d = (e1 + 1) * (e2 + 1) * (e3 + 1) ...
+		cnt = cnt * ((k + 1) % MOD) % MOD;
 
-    for (ll ii = 0; ii < q; ii++) {
-        ll i, j, k;
-        cin >> i >> j >> k;
+		// Soma geométrica
+		// a1(q^n - 1) / q - 1
+		ll num = (power(x, k + 1) - 1 + MOD) % MOD;
+		ll inv = power(x - 1, MOD - 2);
+		sum = sum * num % MOD * inv % MOD;
 
-        ll a = 0, b = n - 1;
-        while (a < b) {
-            ll mid = (a + b) / 2;
-            if (query(1, 0, n, i-1, j, s[mid]) >= k)
-                b = mid;
-            else
-                a = mid + 1;
-        }
-        cout << s[a] << "\n";
-    }
+		// P' = P^(k+1) * (x^(k(k+1)/2))^c
+		// Aqui já foi com Deus mesmo
+		ll triangular = (k * (k + 1) / 2) % FER;
+		prod = power(prod, (k + 1) % FER)
+			 * power(power(x, triangular), c) % MOD;
+
+		c = c * ((k + 1) % FER) % FER;
+	}
+
+	cout << cnt << ' ' << sum << ' ' << prod << '\n';
 }
-

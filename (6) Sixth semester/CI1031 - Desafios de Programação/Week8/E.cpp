@@ -3,94 +3,64 @@
 using namespace std;
 
 using ll = long long;
-const int INF = 987654231;
-struct Node {
-	int sum, pre;
-};
 
-Node t[4 * 200005];
+vector<long long> primes;
 
-Node combine(const Node& a, const Node& b) {
-	return {a.sum + b.sum, min(a.pre, a.sum + b.pre)};
-}
+ll MAX = 1e5 + 1500;
 
-Node assign(char x) {
-	if (x == '(')
-		return {1, 1};
+ll binarySearch(ll n_target, int k) {
+	int low = 0;
+	int high = primes.size() - k;
+	ll ans = 0;
 
-	return {-1, -1};
-}
+	while (low <= high) {
+		int mid = low + (high - low) / 2;
 
-void build(const vector<char>& a, int v, int tl, int tr) {
-	if (tr - tl == 1) {
-		t[v] = assign(a[tl]);
-	} else {
-		int tm = (tl + tr) / 2;
-		build(a, v*2, tl, tm);
-		build(a, v*2+1, tm, tr);
-		t[v] = combine(t[v*2], t[v*2+1]);
+		ll prod = 1;
+		bool fits = true;
+		for (int j = mid; j < mid + k; j++) {
+			if (prod > n_target / primes[j]) {
+				fits = false;
+				break;
+			}
+			prod *= primes[j];
+		}
+
+		if (fits) {
+			ans = prod;
+			low = mid + 1;
+		} else {
+			high = mid - 1;
+		}
 	}
+
+	return ans;
 }
 
-void set_tree(int v, int tl, int tr, int pos, char val) {
-	if (tr - tl == 1)
-		t[v] = assign(val);
-	else {
-		int tm = (tl + tr) / 2;
-
-		if (pos < tm)
-			set_tree(v*2, tl, tm, pos, val);
-		else
-			set_tree(v*2+1, tm, tr, pos, val);
-
-		t[v] = combine(t[v*2], t[v*2+1]);
-	}
-}
-
-Node sum(int v, int tl, int tr, int l, int r) {
-	if (r <= tl || tr <= l) return {0, INF}; // no overlap
-	if (l <= tl && tr <= r) return t[v];  // nested segment
-
-	int tm = (tl + tr) / 2;
-	// partial overlap
-	return combine(sum(v * 2, tl, tm, l, r), sum(v * 2 + 1, tm, tr, l, r));
+void sieve() {
+	vector is_prime(MAX + 15, true);
+	is_prime[0] = is_prime[1] = false;
+	for (ll i = 2; i * i <= MAX; ++i)
+		if (is_prime[i])
+			for (ll j = i * i; j <= MAX; j += i)
+				is_prime[j] = false;
+	for (ll i = 2; i <= MAX; ++i)
+		if (is_prime[i]) primes.push_back(i);
 }
 
 int main () {
 	cin.tie(0)->sync_with_stdio(0);
 
-	ll n, q;
-	cin >> n >> q;
+	ll t, n, k;
 
-	vector<char> v(n);
+	cin >> t;
 
-	for (int i = 0; i < n; i++)
-		cin >> v[i];
+	sieve();
 
-	build(v, 1, 0, n);
+	while (t--) {
+		cin >> n >> k;
 
-	ll t, a, b;
-	for (int i = 0; i < q; i++) {
-		cin >> t;
-
-		if (t == 1) {
-			cin >> a >> b;
-			a -= 1;
-			b -= 1;
-			swap(v[a], v[b]);
-			set_tree(1, 0, n, a, v[a]);
-			set_tree(1, 0, n, b, v[b]);
-		}
-		else {
-			cin >> a >> b;
-			a -= 1;
-			Node val = sum(1, 0, n, a, b);
-
-			if (val.sum == 0 && val.pre >= 0)
-				cout << "Yes\n";
-			else
-				cout << "No\n";
-		}
+		cout << binarySearch(n, k) << "\n";
 	}
 }
 

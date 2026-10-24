@@ -4,72 +4,72 @@ using namespace std;
 
 using ll = long long;
 
-ll t[4 * 100005];
+// 3250 é mais ou menos raiz de 1e7
 
-void t_build(const vector<ll>& a, ll v, ll tl, ll tr) {
-	if (tr - tl == 1) {
-		t[v] = 1;
-	} else {
-		ll tm = (tl + tr) / 2;
-		t_build(a, v*2, tl, tm);
-		t_build(a, v*2+1, tm, tr);
-		t[v] = t[v*2] + t[v*2+1];
-	}
+ll power(ll b, ll e) {
+	ll r = 1;
+	for (; e > 0; e >>= 1, b = b * b)
+		if (e & 1) r = r * b;
+	return r;
 }
 
-void t_remove(ll v, ll tl, ll tr, ll pos) {
-	if (tr - tl == 1)
-		t[v] = 0;
-	else {
-		ll tm = (tl + tr) / 2;
+vector<long long> primes;
 
-		if (pos < tm)
-			t_remove(v*2, tl, tm, pos);
-		else
-			t_remove(v*2+1, tm, tr, pos);
-
-		t[v] = t[v*2] + t[v*2+1];
-	}
+void sieve() {
+	vector is_prime(3250 + 15, true);
+	is_prime[0] = is_prime[1] = false;
+	for (int i = 2; i * i <= 3250; ++i)
+		if (is_prime[i])
+			for (int j = i * i; j <= 3250; j += i)
+				is_prime[j] = false;
+	for (int i = 2; i <= 3250; ++i)
+		if (is_prime[i]) primes.push_back(i);
 }
 
-ll t_find(ll v, ll tl, ll tr, ll k) {
-	if (tr - tl == 1)
-		return tl;
-	ll tm = (tl + tr) / 2;
-
-	if (k < t[v*2])
-		return t_find(v*2, tl, tm, k);
-
-	return t_find(v*2+1, tm, tr, k - t[v*2]);
+vector<long long> trial_division4(long long n) {
+	vector<long long> factorization;
+	for (long long d : primes) {
+		if (d * d > n)
+			break;
+		while (n % d == 0) {
+			factorization.push_back(d);
+			n /= d;
+		}
+	}
+	if (n > 1)
+		factorization.push_back(n);
+	return factorization;
 }
 
 int main () {
 	cin.tie(0)->sync_with_stdio(0);
 
-	ll n, q;
-	cin >> n >> q;
-	vector<ll> a(n);
-	for (ll i = 0; i < n; i++)
-		cin >> a[i];
+	ll t, k, x, e;
 
-	t_build(a, 1, 0, n);
+	cin >> t;
 
-	char id;
-	ll offset = 0;
-	ll move;
-	for (int i = 0; i < q; i++) {
-		cin >> id;
+	sieve();
 
-		if (id == 'q') {
-			cout << a[t_find(1, 0, n, offset)] << '\n';
+	while (t--) {
+		cin >> k;
+		ll num = 1;
+		for (int i = 0; i < k; i++) {
+			cin >> x >> e;
+			num *= power(x, e);
 		}
-		else if (id == 'm') {
-			cin >> move;
-			offset += move;
-		}
-		else {
-			t_remove(1, 0, n, t_find(1, 0, n, offset));
-		}
+
+		vector<long long> ans = trial_division4(num - 1);
+		vector<pair<ll,int>> out;
+		for (ll p : ans)
+			if (!out.empty() && out.back().first == p)
+				out.back().second++;
+			else
+				out.push_back({p, 1});
+
+		reverse(out.begin(), out.end());
+
+		for (auto  p : out)
+			cout << p.first << ' ' << p.second << '\n';
 	}
 }
 
