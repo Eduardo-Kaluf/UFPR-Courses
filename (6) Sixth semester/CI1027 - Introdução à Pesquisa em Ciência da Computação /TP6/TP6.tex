@@ -3,7 +3,7 @@
 \usepackage{sbc-template}
 \usepackage{graphicx,url}
 \usepackage[utf8]{inputenc}
-\usepackage[brazil]{babel}
+\usepackage[english]{babel}
 \usepackage{multirow}
 \usepackage[T1]{fontenc}
 %\usepackage[latin1]{inputenc}
@@ -11,7 +11,7 @@
      
 \sloppy
 
-\title{K-ORCH: orquestrador para instâncias multikernel distribuídas}
+\title{K-ORCH: an orchestrator for distributed multikernel instances}
 
 \author{Eduardo Kaluf\inst{1}, Carlos Alberto Maziero\inst{2}}
 
@@ -21,7 +21,7 @@
   \email{eduardo@kaluf.com.br, maziero@inf.ufpr.br}
 }
 
-\begin{document} 
+\begin{document}
 
 \maketitle
 
@@ -30,7 +30,7 @@
   the same processor, being a middle ground between containers and VMs and offering predictable
   performance, kernels with specialized configurations, and performance isolation between instances, without CPU and
   memory virtualization overhead.
-  Current implementations of this architecture \cite{wang2025multikernel},
+  Current implementations of this architecture \cite{wang2025multikernel}
   manage these instances only within a single machine, and no tools exist to orchestrate them in distributed environments.
   This work proposes K-ORCH, an orchestrator that provisions, places, and monitors multikernel instances across
   multiple nodes, based on a desired-state model, agents responsible for partitioning cores and memory on demand,
@@ -48,7 +48,7 @@ The number of cores per processor grows incessantly, and processors already exce
 Monolithic operating systems, designed around data and control structures shared by all cores, have kept pace with this growth
 at the cost of increasingly complex mechanisms, such as fine-grained locks, per-core data structures, and CPU affinity and
 isolation policies~\cite{boydwickizer2010mosbench}.
-These solutions increase complexity and the kernel surface, and make state sharing between cores a \textit{bottleneck} for
+These solutions increase complexity and the kernel surface, and make state sharing between cores a bottleneck for
 performance and scalability~\cite{boydwickizer2008corey}.
 In this context, the multikernel architecture emerges, proposing to treat the machine as a network of independent cores,
 with replicated state and explicit message-based communication, instead of a single kernel with shared
@@ -74,9 +74,9 @@ Furthermore, the multikernel architecture occupies a unique point between the tw
 Containers are executable units of code that package an application and its dependencies, using mechanisms of the OS itself, such as \textit{namespaces} and \textit{cgroups},
 to divide resources and limit them.
 Containers are lightweight, but they share the host kernel, which widens the attack surface between
-applications and leaves them subject to interference from neighbors (\textit{noisy neighbors}).
+applications and leaves them subject to interference from neighbors (noisy neighbors).
 On the other hand, VMs run their own
-kernel on top of a hypervisor and offer stronger isolation, at the cost of an \textit{overhead} from guest-host communication,
+kernel on top of a hypervisor and offer stronger isolation, at the cost of an overhead from guest-host communication,
 I/O, and memory access, that is, they have higher resource consumption per instance.
 Thus, a multikernel instance comes in as a third way.
 It also runs its own kernel, but directly on the physical cores, without the CPU and memory virtualization layer of VMs, which favors
@@ -92,7 +92,7 @@ Existing tools for multikernel, on the other hand, such as IHK~\cite{shimosawa20
 offer mechanisms to create, configure, monitor, and destroy instances, similar to container tools such as \textit{docker compose},
 but they operate on a single machine, without defining policies about where and when these instances should be created.
 Without a robust orchestration layer, the architecture tends to remain restricted to single-machine experiments, far from
-distributed production environments such as the cloud, \textit{clusters}, \textit{fog computing}, and edge computing.
+distributed production environments such as the cloud, clusters, fog computing, and edge computing.
 
 % K-ORCH proposal transitioning to the topic
 Therefore, this work proposes K-ORCH, an orchestrator for multikernel instances on nodes of a local network,
@@ -116,14 +116,14 @@ schedule for carrying out the work.
 
 % Evidence that the problem is in fact real
 The trade-off between isolation and performance described in Section~\ref{sec:introducao} has concrete consequences in
-\textit{multi-tenant} environments.
+multi-tenant environments.
 Container escape vulnerabilities, such as CVE-2019-5736 and CVE-2024-21626 \cite{cve20195736,cve202421626},
 make evident the risk of sharing the same kernel among workloads from different customers.
 In addition, interference between workloads leads providers to keep their servers underutilized, in order to
 preserve the latency of critical services~\cite{lo2015heracles}.
 Industry and academia seek intermediate solutions
 to deal with these problems, such as Firecracker~\cite{agache2020firecracker}, developed to run functions and
-containers from different customers in microVMs, and Kata Containers~\cite{katacontainers}, which runs each \textit{pod} (basic unit of \textit{Kubernetes})
+containers from different customers in microVMs, and Kata Containers~\cite{katacontainers}, which runs each pod (basic unit of Kubernetes)
 in a lightweight virtual machine.
 These efforts indicate that there is demand for alternatives to the two traditional models, where the multikernel architecture has a lot of
 room to establish itself as a third option.
@@ -146,12 +146,12 @@ equivalent layer.
 More than that, from a scientific point of view, characterizing the costs and limits of this orchestration is a contribution
 in itself, regardless of how the architecture behaves on the proposed criteria.
 
-An alternative to building a dedicated orchestrator would be to integrate multikernel instances into \textit{Kubernetes} through
+An alternative to building a dedicated orchestrator would be to integrate multikernel instances into Kubernetes through
 an API compatible with its interfaces, similar to what Kata Containers does with its lightweight VMs.
 This work chooses to explore a dedicated orchestrator mainly because placement depends on physical resources, such as free cores and
 reserved memory.
 Therefore, the intention is to investigate partitioning without being tied to an existing platform; in addition, an independent prototype makes it possible
-to measure the cost of orchestration in isolation, with less interference and greater correctness.
+to measure the cost of orchestration in isolation, with less interference and greater accuracy.
 
 % What mechanisms are needed to provision, place, and monitor
 % multikernel instances across multiple nodes, and what is the cost relative to orchestrated VMs/microVMs (feasibility + cost/overhead + preserved isolation)?
@@ -181,17 +181,17 @@ placing, and monitoring multikernel instances across multiple nodes.
   each request based on free cores and available memory.
   \item Develop the resource partitioning model: implement a hybrid model that allows choosing between reserving memory and CPU regions at
   the initialization of each node or partitioning dynamically on each request.
-  \item Implement instance monitoring: collect metrics from the machines on the state and resource usage of each node,
+  \item Implement instance monitoring: collect metrics on the state and resource usage of each node,
   detect failures and loss of communication with the agent, using monitoring to recover instances with errors,
   relocating or restarting them as necessary.
-  \item Experimentally evaluate the orchestrator: measure provisioning time, the \textit{overhead} of the agent and the
+  \item Experimentally evaluate the orchestrator: measure provisioning time, the overhead of the agent and the
   control plane, instance density per node, and performance interference between instances, comparing the
   results with orchestrated microVMs, and compare static and dynamic partitioning models.
 \end{itemize}
 
 K-ORCH will be designed and evaluated for nodes connected on the same local network and under a single administrative domain.
 In this scenario, it is assumed that the nodes are administered by the same entity and that the network offers low latency.
-The extension to multiple local networks under the same administrative domain, such as in a \textit{datacenter}, is considered
+The extension to multiple local networks under the same administrative domain, such as in a datacenter, is considered
 a natural evolution of the work.
 The orchestration of nodes distributed over the Internet, under multiple administrative domains, is outside the
 scope of this work.
@@ -202,9 +202,10 @@ This section presents related work, showing the evolution of the multikernel arc
 works to the focus of this proposal: provisioning, placing, and monitoring multikernel instances across different nodes.
 Section~\ref{sec:rel-multikernel} presents the evolution of architectures with multiple kernels, from systems for
 shared-memory multiprocessors to the multikernels used in HPC environments and the recent proposal for
-Linux. Section~\ref{sec:rel-fundamentos} discusses how these systems decide on resource allocation, how they
-monitor them, and how they ensure the isolation and availability of instances. Section~\ref{sec:rel-orquestracao} addresses
-current orchestrators and multikernel management tools.
+Linux.
+Section~\ref{sec:rel-fundamentos} discusses how these systems decide on resource allocation, how they
+monitor them, and how they ensure the isolation and availability of instances.
+Section~\ref{sec:rel-orquestracao} addresses current orchestrators and multikernel management tools.
 
 \subsection{Architectures with multiple kernels} \label{sec:rel-multikernel}
 
@@ -220,14 +221,15 @@ TCP/IP, which makes it possible to run specialized operating systems side by sid
 Cellular Disco~\cite{govil2000cellular} extends the proposal by dividing the monitor itself into smaller parts, in order to
 contain hardware faults, turning the multiprocessor into what would be a virtual cluster.
 
-Corey~\cite{boydwickizer2008corey}, in turn, starts from the principle that applications should control sharing.
+Corey~\cite{boydwickizer2008corey}, by contrast, starts from the principle that applications should control sharing.
 By default, each kernel data structure is used by a single core, and abstractions such as \textit{address ranges},
 \textit{kernel cores}, and \textit{shares} allow the application to explicitly indicate what should be shared.
 Although it runs a single kernel, Corey was an important foundation for later works, such as Barrelfish.
 FOS~\cite{wentzlaff2009fos}, in turn, proposes factoring OS services into fleets of servers spatially distributed
 across the cores, with communication exclusively through messages, motivated by the finding that the
-Linux physical page allocator did not scale beyond eight cores. Message-based communication became
-established in subsequent proposals, including the multikernel implementation based on Linux~\cite{wang2025multikernel}.
+Linux physical page allocator did not scale beyond eight cores.
+Message-based communication became established in subsequent proposals, including the multikernel implementation based on
+Linux~\cite{wang2025multikernel}.
 
 The modern formulation of the concept is presented by Baumann et al.~\cite{baumann2009multikernel}, who propose treating
 the machine as a network of independent cores.
@@ -277,7 +279,7 @@ divided into four activities (generation, processing, dissemination, and present
 information staleness as the main problem of monitoring, which directly affects an orchestrator that
 makes decisions based on remote state.
 In microservices, observability is organized today around three sources:
-\textit{metrics}, \textit{logs}, and \textit{traces}~\cite{faseeha2025observability}.
+metrics, logs, and traces~\cite{faseeha2025observability}.
 LDMS~\cite{agelastos2014ldms} shows that it is
 possible to continuously monitor an entire system, even in HPC, with collector processes on the nodes and
 aggregator processes that gather the data, with low overhead on the applications.
@@ -319,7 +321,7 @@ something that will be adopted in this work.
 For workloads that require stronger isolation than that of containers, the predominant approach is to integrate lightweight virtual
 machines into existing orchestrators. Firecracker~\cite{agache2020firecracker} is a minimal virtual machine
 monitor, developed to run functions and containers from different customers in microVMs, and
-Kata Containers~\cite{katacontainers} runs each Kubernetes \textit{pod} in a lightweight virtual machine, integrated
+Kata Containers~\cite{katacontainers} runs each Kubernetes pod in a lightweight virtual machine, integrated
 through the container runtime interface (CRI).
 Orchestrated microVMs are, therefore, the comparison baseline adopted in this work.
 
@@ -375,14 +377,14 @@ on the same node or relocating it to another one that is available and healthy.
 The fourth stage consists of carrying out the experimental evaluation, which will be conducted on a set of physical nodes connected on
 the same local network, in addition to testing the tool with specific experiments:
 \begin{itemize}
-  \item \textbf{Research and explore workloads:} Workloads will be selected from established \textit{benchmarks}, according to
+  \item \textbf{Research and explore workloads:} Workloads will be selected from established benchmarks, according to
   criteria fixed before the tests are executed, and must cover both scenarios in which the multikernel architecture tends to
   be favored and scenarios in which it tends to be disfavored.
   In this way, the results are not conditioned on a choice of workloads that favors the proposal and can provide clear and meaningful results.
   \item \textbf{Provisioning and orchestrator cost:} time between the request and the instance's response,
   broken down into partitioning, kernel boot, and availability, compared to the boot
   time of microVMs. Also analyze CPU and memory consumption of the agent and the control plane.
-  \item \textbf{Density and interference:} run latency-sensitive, \textit{CPU bound}, and \textit{memory bound} workloads alongside other
+  \item \textbf{Density and interference:} run latency-sensitive, CPU-bound, and memory-bound workloads alongside other
   applications, comparing multikernel and microVMs.
   \item \textbf{Static and dynamic partitioning:} sequences of requests with many different sizes,
   measuring the utilization of cores and memory on each node, rejected requests, and provisioning time.
