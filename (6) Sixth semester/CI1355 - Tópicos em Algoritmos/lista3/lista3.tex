@@ -1,0 +1,315 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\setlist[enumerate]{leftmargin=*}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Dec}{\mathsf{Dec}}
+\newcommand{\Gen}{\mathsf{Gen}}
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\Priv}{\mathrm{Priv}}
+\newcommand{\PubK}{\mathrm{PubK}}
+\newcommand{\PubKeav}[3]{\mathsf{PubK}^{\mathrm{eav}}_{#1,#2}(#3)}
+\usepackage{titlesec}
+
+\titleformat*{\section}{\normalsize\bfseries}
+\titleformat*{\subsection}{\small\bfseries}
+
+\title{Lista 3 \\ EDUARDO KALUF - GRR20241770}
+\author{}
+\date{}
+
+\begin{document}
+    \maketitle
+
+%======================================================================
+    \section*{Questão 1 --- ``Seja $\Z_p^* = \{1, 2, \ldots, p-1\}$, onde $p$ é um
+    número primo. Usando os resultados vistos em sala, prove que $\Z_p^*$ forma um
+    grupo com a operação de multiplicação módulo $p$.''}
+%======================================================================
+
+    \paragraph{Fechamento.}
+    Para todos $a, b \in \{1, 2, \ldots, p-1\}$ sabemos que o resultado
+    de $(a \cdot b) \bmod p$ pertencerá ao grupo. Isso vale pois $p$ é primo e nenhum elemento
+    do grupo é divisível por $p$, afinal $p$ é maior que qualquer elemento do grupo. Sendo assim,
+    pelo Lema de Euclides, se nem $a$ nem $b$ são divisíveis por $p$, o produto $a \cdot b$
+    também não será, ou seja, $(a \cdot b) \bmod p \neq 0$ para quaisquer $a, b \in G$.
+    Por último, o resto da divisão por $p$ sempre pertence a $\{0, 1, \ldots, p-1\}$, logo
+    $(a \cdot b) \bmod p \in \{1, \ldots, p-1\}$.
+    Dessa forma, para todo $g, h \in G$, temos que $(g \cdot h) \bmod p \in G$ também.
+
+    \paragraph{Identidade.} Para qualquer $g \in G$, o elemento $e = 1 \in G$ é definido como o elemento
+    identidade, pois para todo $g \in G$ temos que:
+    \[
+        (g \cdot 1) \bmod p = g = (1 \cdot g) \bmod p.
+    \]
+
+    \paragraph{Inverso.}
+    Para qualquer $g \in G$ temos que $\gcd(g, p) = 1$, pois $p > g$ e $p$ é primo.
+    Isso garante que o número possua um inverso multiplicativo módulo $p$
+    pela identidade de Bézout.
+    Bézout diz que se temos que $\gcd(g, p) = 1$, então existem $x, y \in \Z$ tais que:
+
+    \[
+        g \cdot x + p \cdot y = 1.
+    \]
+
+    Tirando o módulo de $p$, o termo $p \cdot y$ se anula, logo:
+
+    \[
+        (g \cdot x) \bmod p = 1,
+    \]
+
+    Definimos $g^{-1} = x \bmod p$.
+    Como $(g \cdot g^{-1}) \bmod p = 1 \neq 0$, temos $g^{-1} \neq 0$, logo $g^{-1} \in G$ é o
+    inverso multiplicativo de $g$.
+
+    \paragraph{Associatividade.} A associatividade das operações segue de maneira trivial.
+    Multiplicar dois inteiros é uma operação associativa e temos a seguinte propriedade:
+
+    \[
+        ((x \bmod p) \cdot y) \bmod p = (x \cdot y) \bmod p = (x \cdot (y \bmod p)) \bmod p
+    \]
+
+    Sendo assim, para quaisquer $a, b, c \in G$ temos que:
+
+    \[
+        \bigl(((a \cdot b) \bmod p) \cdot c\bigr) \bmod p
+        = (a \cdot b \cdot c) \bmod p
+        = \bigl(a \cdot ((b \cdot c) \bmod p)\bigr) \bmod p.
+    \]
+
+
+    Sendo assim, $\Z_p^*$ atende todas as definições e provamos que ele é um grupo.
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 2 --- ``(Exercício 10.3 do livro, adaptado). Descreva um ataque
+    `Man-in-the-middle' para o protocolo de troca de chaves de Diffie-Hellman. No fim
+    do protocolo, o adversário deve ter compartilhado uma chave $k_A$ com Alice e uma
+    chave $k_B$ com Bob, potencialmente diferente de $k_A$, e Alice e Bob não
+    detectam o que ocorreu.''}
+%======================================================================
+
+    Alice quer compartilhar uma chave secreta com Bob utilizando o protocolo Diffie-Hellman.
+    Dessa forma, Alice deve primeiramente sortear um número aleatório $x \leftarrow \Z_q$ e, em seguida,
+    enviar $h_A = g^x$, tal que $g \in G$, para Bob.
+
+    No meio do caminho, a mensagem é interceptada por Maine, que tem controle sobre o canal de comunicação.
+    Maine recebe $h_A$ de Alice e o guarda, sorteando $m_1 \leftarrow \Z_q$ e repassando $h_{m_1} = g^{m_1}$ para Bob.
+
+    Bob recebe $h_{m_1}$ de Maine, pensando ter recebido de Alice, e faz o mesmo: sorteia $y \leftarrow \Z_q$
+    e envia $h_B = g^y$ para Alice.
+    Novamente, Maine intercepta o valor, guarda $h_B$, sorteia $m_2 \leftarrow \Z_q$ e repassa $h_{m_2} = g^{m_2}$ para Alice.
+
+    As chaves são definidas como a exponenciação entre os valores recebidos e seus expoentes secretos:
+
+    \[
+        K_A = (h_{m_2})^{x} = g^{x m_2}, \qquad K_B = (h_{m_1})^{y} = g^{y m_1}.
+    \]
+
+    Como Maine conhece $m_1$ e $m_2$, ele consegue produzir as mesmas chaves de Alice e de Bob:
+
+    \[
+        K_A = (h_A)^{m_2} = g^{x m_2}, \qquad K_B = (h_B)^{m_1} = g^{y m_1}.
+    \]
+
+    Assim, Maine possui a chave $K_A$, a mesma de Alice, e a chave $K_B$, a mesma de Bob.
+
+    Essas duas chaves têm probabilidade altíssima de serem diferentes.
+    Elas são iguais somente quando os valores sorteados por Maine acabam fazendo com que ambas as contas deem o mesmo resultado.
+
+    Alice e Bob não conseguem detectar o ataque, pois todos os elementos são sorteados de maneira uniforme
+    e o protocolo não realiza autenticação das mensagens enviadas.
+    Após estabelecer a comunicação, Maine continua interceptando as mensagens, decifrando cada mensagem de
+    Alice com $K_A$ e recifrando-a com $K_B$ antes de repassá-la a Bob (e vice-versa), mantendo a
+    comunicação normal para ambos os lados honestos.
+
+    \begin{center}
+        \begin{tikzpicture}[>=Stealth]
+        \node[align=center] at (0,-0.4) {Alice\\[2pt] $x \leftarrow \Z_q$\\[2pt] $h_A = g^x$};
+        \node[draw, minimum width=2.6cm, minimum height=2.8cm, label={[below=2pt]north:Maine}] (mal) at (5,-0.6) {};
+        \node[font=\small, align=center] at (5,-0.9) {$m_1 \leftarrow \Z_q$\\[2pt] $m_2 \leftarrow \Z_q$};
+        \node[align=center] at (10.4,-0.4) {Bob\\[2pt] $y \leftarrow \Z_q$\\[2pt] $h_B = g^y$};
+
+        \draw[->] (1.2,-0.2) -- node[above]{$h_A$}     (3.7,-0.2);
+        \draw[<-] (1.2,-1.0) -- node[above]{$h_{m_2}$} (3.7,-1.0);
+        \draw[->] (6.3,-0.2) -- node[above]{$h_{m_1}$} (9.4,-0.2);
+        \draw[<-] (6.3,-1.0) -- node[above]{$h_B$}     (9.4,-1.0);
+
+        \node at (0,-2.0)    {$K_A = (h_{m_2})^{x}$};
+        \node at (10.4,-2.0) {$K_B = (h_{m_1})^{y}$};
+        \node[below=4pt of mal, align=center] {$K_A = (h_A)^{m_2}$\\[2pt] $K_B = (h_B)^{m_1}$};
+        \end{tikzpicture}
+    \end{center}
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 3}
+%======================================================================
+
+    \begin{quote}\small\bfseries
+        ``Seja $\Pi = (\Gen, \Enc, \Dec)$ uma cifra de chave pública que é CPA-segura com
+        espaço de mensagens $\{0,1\}^n$ para parâmetro de segurança $n$. Neste exercício,
+        vamos mostrar que `o jeito óbvio' de estender $\Pi$ para mensagens de tamanho
+        $\{0,1\}^{2n}$ é também CPA-seguro. Em particular, vamos mostrar que a cifra
+        $\Pi' = (\Gen, \Enc', \Dec')$ onde
+        $\Enc'_{pk}((m_1, m_2)) = (\Enc_{pk}(m_1), \Enc_{pk}(m_2))$ e
+        $\Dec'_{sk}((c_1, c_2)) = (\Dec_{sk}(c_1), \Dec_{sk}(c_2))$ é também CPA-segura.
+
+        Para a demonstração, usaremos o método híbrido, com três experimentos híbridos
+        baseados no experimento $\PubKeav{\Pi'}{\mathcal{A}}{n}$ (lembre que uma cifra de
+        chave pública EAV-segura é também CPA-segura) definidos a seguir:
+
+        \begin{itemize}
+            \item $E_{00}$ é idêntico ao experimento $\PubKeav{\Pi'}{\mathcal{A}}{n}$, porém
+            o desafiante, ao receber as mensagens de desafio $(m_{0,0}, m_{0,1})$ e
+            $(m_{1,0}, m_{1,1})$, sempre retorna $\Enc'_{pk}(m_{0,0}, m_{0,1})$.
+            \item $E_{01}$ é também idêntico ao experimento $\PubKeav{\Pi'}{\mathcal{A}}{n}$,
+            porém o desafiante sempre retorna $\Enc'_{pk}(m_{0,0}, m_{1,1})$. Isto é, o
+            desafiante produz um texto cifrado que corresponde à primeira metade da
+            primeira mensagem e à segunda metade da segunda mensagem.
+            \item $E_{11}$ é também idêntico ao experimento $\PubKeav{\Pi'}{\mathcal{A}}{n}$,
+            porém o desafiante sempre retorna $\Enc'_{pk}(m_{1,0}, m_{1,1})$.
+        \end{itemize}
+
+        Perceba que o experimento $E_{01}$ não corresponde à uma situação que de fato
+        possa ocorrer no experimento $\PubKeav{\Pi'}{\mathcal{A}}{n}$. Ainda assim, nada nos
+        impede de analisar o comportamento de $\mathcal{A}$ nessa situação (e essa análise
+        é útil para nossa demonstração).''
+    \end{quote}
+
+    \subsection*{a)}
+
+    \begin{quote}\small\bfseries
+        ``Defina $p_{00}$, $p_{01}$ e $p_{11}$ como a probabilidade de que o adversário
+        $\mathcal{A}$ responda $b' = 1$ no experimento $E_{00}$, $E_{01}$ e $E_{11}$,
+        respectivamente. Argumente que
+        \[
+            \Pr\!\left[\PubKeav{\Pi'}{\mathcal{A}}{n} = 1\right]
+            = \frac{1}{2} + \frac{1}{2} \cdot (p_{11} - p_{00}).\text{''}
+        \]
+    \end{quote}
+
+    O adversário ganha $E_{00}$ quando responde $0$.\\
+    O adversário nunca ganha $E_{01}$.\\
+    O adversário ganha $E_{11}$ quando responde $1$.
+
+    Ou seja, o experimento todo pode ser medido como $\frac12$, chance de ganhar
+    chutando, mais a situação em que ele vence os desafios, % leitura incerta no manuscrito
+    que podem ser descritos em termos de $p_{00}, p_{01}, p_{11}$ assim:
+    \[
+        \Pr = \frac12 + \frac12\,(p_{11} - p_{00}).
+    \]
+
+    \subsection*{b)}
+
+    \begin{quote}\small\bfseries
+        ``Prove, a partir da segurança de $\Pi$, que existe uma função negligenciável
+        $\negl$ tal que $|p_{01} - p_{00}| \le \negl(n)$.
+
+        \textit{Dica.} Apresente uma redução que transforma um adversário $\mathcal{A}$
+        para o qual $|p_{01} - p_{00}| = \varepsilon$ em um adversário $\mathcal{A}'$ que
+        possui vantagem similar para quebrar a segurança de $\Pi$.
+
+        Explique, de maneira sucinta, como a sua demonstração pode ser adaptada para
+        provar também que existe uma função negligenciável $\negl$ tal que
+        $|p_{11} - p_{01}| \le \negl(n)$.''
+    \end{quote}
+
+    Podemos utilizar $A$ como subrotina no desafio $\Priv_{A'}$ a fim de quebrar
+    $\Pi$, basta que $A'$ responda $1$ quando $A$ responder $1$.
+
+    \begin{center}
+        \begin{tikzpicture}[>=Stealth, box/.style={draw, minimum width=1.4cm, minimum height=1.6cm}]
+            \node[box, label=above:Desafiante] (d)  at (0,0)   {};
+            \node[box, label=above:$A'$]       (ap) at (4,0)   {};
+            \node[box, label=above:$A$]        (a)  at (7.5,0) {};
+            \draw[->] ([yshift=4mm]d.east)   -- ([yshift=4mm]ap.west);
+            \draw[<-] ([yshift=-4mm]d.east)  -- node[below]{$b'$} ([yshift=-4mm]ap.west);
+            \draw[->] ([yshift=4mm]ap.east)  -- ([yshift=4mm]a.west);
+            \draw[<-] ([yshift=-4mm]ap.east) -- ([yshift=-4mm]a.west);
+        \end{tikzpicture}
+    \end{center}
+
+    Dessa forma, quebraríamos $\Priv_{A'}$, porém sabemos que
+    \[
+        \Priv_{A'} \le \frac12 + \negl(n),
+    \]
+    logo deve ser para $A$ também:
+    \begin{align*}
+        \Priv_A = \frac12 + \frac12\,(p_{01} - p_{00}) &\le \frac12 + \negl(n)\\
+        p_{01} - p_{00} &\le 2\,\negl(n) = \negl(n)\\
+        |p_{01} - p_{00}| &\le \negl(n)
+    \end{align*}
+    O mesmo raciocínio segue para $|p_{11} - p_{01}|$.
+
+    \subsection*{c)}
+
+    \begin{quote}\small\bfseries
+        ``Argumente que $\Pi'$ é CPA-segura.
+
+        \textit{Dica.} Use a seguinte propriedade de diferenças modulares:
+        \[
+            |a - c| = |a - b + b - c| \le |a - b| + |b - c|.\text{''}
+        \]
+    \end{quote}
+
+    Pela desigualdade triangular:
+    \[
+        |p_{11} - p_{00}| = |p_{11} - p_{01} + p_{01} - p_{00}|
+        \le |p_{11} - p_{01}| + |p_{01} - p_{00}|.
+    \]
+    Logo:
+    \[
+        \PubK = \frac12 + \frac12\,(p_{11} - p_{00})
+        \le \frac12 + \frac12\bigl(|p_{11} - p_{01}| + |p_{01} - p_{00}|\bigr).
+    \]
+    Pelo exercício b), temos que
+    \begin{align*}
+        \PubK &\le \frac12 + \frac12\bigl(\negl(n) + \negl(n)\bigr)\\
+        &\le \frac12 + \negl'(n).
+    \end{align*}
+    Sendo assim, $\Pi'$ é seguro.
+
+    \clearpage
+
+%======================================================================
+    \section*{Questão 4}
+%======================================================================
+
+    \begin{quote}\small\bfseries
+        ``(Exercício 12.4 do livro, adaptado). Considere o seguinte experimento de
+        segurança para assinaturas digitais: um adversário probabilístico polinomial
+        $\mathcal{A}$ recebe uma chave pública $\langle N, e \rangle$ e uma mensagem
+        $m \leftarrow \Z_N^*$ escolhida de maneira uniforme, e produz uma `assinatura'
+        $\sigma$. O adversário vence se $\sigma$ é uma assinatura válida para $m$. Perceba
+        que o adversário não pode realizar nenhuma consulta de assinatura.
+
+        Assumindo que o problema RSA é difícil, mostre que, para o esquema de assinatura
+        RSA básico que vimos em sala obedece ao seguinte: para todo adversário
+        probabilístico polinomial $\mathcal{A}$ existe uma função negligenciável $\negl$
+        tal que
+        \[
+            \Pr\!\left[\mathcal{A}(\langle N, e \rangle, m) \text{ vence no experimento}\right]
+            \le \negl(n).
+        \]
+        Onde $n$ é o parâmetro de segurança usado para gerar a chave
+        $\langle N, e \rangle$ e a aleatoriedade é sobre as escolha de
+        $\langle N, e \rangle$, $m$ e sobre a aleatoriedade de $\mathcal{A}$.''
+    \end{quote}
+
+    % Resposta da Questão 4
+
+\end{document}
