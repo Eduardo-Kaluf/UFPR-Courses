@@ -8,7 +8,7 @@
 \usepackage[T1]{fontenc}
 %\usepackage[latin1]{inputenc}
 
-     
+
 \sloppy
 
 \title{K-ORCH: an orchestrator for distributed multikernel instances}
@@ -27,10 +27,10 @@
 
 \begin{abstract}
   The multikernel architecture runs multiple independent kernel instances, each on a dedicated partition of cores and memory of
-  the same processor, being a middle ground between containers and VMs and offering predictable
+  the same processor, being a middle ground between containers and virtual machines, offering predictable
   performance, kernels with specialized configurations, and performance isolation between instances, without CPU and
   memory virtualization overhead.
-  Current implementations of this architecture \cite{wang2025multikernel}
+  Current implementations of this architecture
   manage these instances only within a single machine, and no tools exist to orchestrate them in distributed environments.
   This work proposes K-ORCH, an orchestrator that provisions, places, and monitors multikernel instances across
   multiple nodes, based on a desired-state model, agents responsible for partitioning cores and memory on demand,
@@ -56,7 +56,7 @@ state, bringing the kernel itself closer to the idea of a distributed system~\ci
 
 % Defining the types of multikernel
 Since then, two ways of logically subdividing the cores have been widely explored.
-The first restructures the OS entirely, as in Barrelfish, which runs one kernel per core~\cite{baumann2009multikernel}.
+The first restructures the operating system (OS) entirely, as in Barrelfish, which runs one kernel per core~\cite{baumann2009multikernel}.
 The second line, adopted by this work, partitions the physical machine
 among multiple independent kernel instances, each with its own cores and memory region,
 with the possibility of having different configurations and fine-tuning.
@@ -64,8 +64,8 @@ This line emerged with high-performance computing (HPC) in mind, with systems th
 and was recently proposed for Linux itself, which now loads independent instances on reserved cores and memory, with run-time
 reallocation~\cite{wang2025multikernel,wang2025lpc}.
 In this model, a host kernel partitions the resources and starts the
-instances, which communicate through explicit message passing and shared memory regions, in addition, they access the
-rest of the hardware, in general, through virtual devices provided by the host kernel.
+instances, which communicate through explicit message passing and shared memory regions.
+In addition, they access the rest of the hardware, in general, through virtual devices provided by the host kernel.
 In this work, \textit{multikernel instance} refers to this set of objects: dedicated cores, its own memory region,
 an application image, and its own kernel configuration.
 
@@ -75,7 +75,7 @@ Containers are executable units of code that package an application and its depe
 to divide resources and limit them.
 Containers are lightweight, but they share the host kernel, which widens the attack surface between
 applications and leaves them subject to interference from neighbors (noisy neighbors).
-On the other hand, VMs run their own
+On the other hand, virtual machines (VMs) run their own
 kernel on top of a hypervisor and offer stronger isolation, at the cost of an overhead from guest-host communication,
 I/O, and memory access, that is, they have higher resource consumption per instance.
 Thus, a multikernel instance comes in as a third way.
@@ -106,8 +106,9 @@ provisioning time, control plane cost, density, and performance interference bet
 compared with orchestrated microVMs.
 
 % Paragraph on the organization and presentation of the document
-The remainder of this document is organized as follows. Section~\ref{sec:just} presents the justification for the
-work along with the research question, the general objectives are in Section~\ref{sec:objetivos} and the specific ones in Section~\ref{subsec:objetivo-especificos}.
+The remainder of this document is organized as follows.
+Section~\ref{sec:just} presents the justification for the work along with the research question and hypothesis, the general
+objectives are in Section~\ref{sec:objetivos} and the specific ones in Section~\ref{subsec:objetivo-especificos}.
 Section~\ref{sec:related} discusses related work, and Section~\ref{sec:methods} describes the methodology.
 Finally, Section~\ref{sec:results} presents the expected results, and Section~\ref{sec:crono}, the two-year
 schedule for carrying out the work.
@@ -121,15 +122,16 @@ Container escape vulnerabilities, such as CVE-2019-5736 and CVE-2024-21626 \cite
 make evident the risk of sharing the same kernel among workloads from different customers.
 In addition, interference between workloads leads providers to keep their servers underutilized, in order to
 preserve the latency of critical services~\cite{lo2015heracles}.
-Industry and academia seek intermediate solutions
-to deal with these problems, such as Firecracker~\cite{agache2020firecracker}, developed to run functions and
+Industry and academia have pursued intermediate solutions to this trade-off, such as Firecracker~\cite{agache2020firecracker}, developed to run functions and
 containers from different customers in microVMs, and Kata Containers~\cite{katacontainers}, which runs each pod (basic unit of Kubernetes)
 in a lightweight virtual machine.
-These efforts indicate that there is demand for alternatives to the two traditional models, where the multikernel architecture has a lot of
-room to establish itself as a third option.
+These efforts indicate that there is demand for alternatives to the two traditional models.
+This work focuses on the performance side of this trade-off, namely performance isolation and kernel specialization.
+Security isolation between multikernel instances depends on the hardware protection mechanisms used by each implementation,
+and it will not be part of the work evaluation.
 
 % For whom, scenarios where only multikernel fits
-Multikernel is a huge advantage for large-scale applications in which specific OS configurations
+Multikernel is a significant advantage for large-scale applications in which specific OS configurations
 directly influence the performance of the instances being run, such as databases and monitors.
 This makes it unnecessary to dedicate an entire machine specifically to the applications, something that is not possible
 with containers due to sharing of the host kernel, avoiding costs and giving greater speed to the
@@ -158,6 +160,15 @@ to measure the cost of orchestration in isolation, with less interference and gr
 Therefore, the central question that serves as the basis of this work is: what mechanisms are needed to provision, place, and monitor multikernel instances
 across multiple nodes, and what is the cost of this management relative to the orchestration of microVMs?
 
+The hypothesis of this work is that it is possible to orchestrate multikernel instances across multiple nodes such
+that:
+
+\begin{enumerate}
+  \item The cost introduced by the orchestrator is a small fraction of the total provisioning time.
+  \item Instances exhibit less performance interference among themselves than microVMs under the same workloads and equivalent orchestration.
+  \item Dynamic resource partitioning increases node utilization compared to static partitioning.
+\end{enumerate}
+
 \section{Objectives} \label{sec:objetivos}
 
 % General: design, implement, and evaluate K-ORCH (answering the research question)
@@ -185,8 +196,9 @@ placing, and monitoring multikernel instances across multiple nodes.
   detect failures and loss of communication with the agent, using monitoring to recover instances with errors,
   relocating or restarting them as necessary.
   \item Experimentally evaluate the orchestrator: measure provisioning time, the overhead of the agent and the
-  control plane, instance density per node, and performance interference between instances, comparing the
-  results with orchestrated microVMs, and compare static and dynamic partitioning models.
+  control plane, instance density per node, performance interference between instances, failure detection and
+  recovery times, comparing the results with microVMs orchestrated under equivalent conditions, and compare static
+  against dynamic partitioning models.
 \end{itemize}
 
 K-ORCH will be designed and evaluated for nodes connected on the same local network and under a single administrative domain.
@@ -344,7 +356,8 @@ architecture has not yet been documented in the literature.
 % Define multikernel instance
 \subsection{Characterize and define the orchestrable unit}\label{subsec:caracterizar-e-definir-a-unidade-orquestravel}
 
-In the first stage, the state of the art will be surveyed and the orchestrable unit will be defined.
+In the first stage, the state of the art will be surveyed and the orchestrable unit will be defined, that way, the kernel version and the physical machines
+used in the work will be fixed.
 The multikernel platform will be studied experimentally regarding boot time, the way cores and
 memory are reserved, the instances' access to the network, and possible signals available for detecting failures.
 Based on this characterization, what makes up an instance (dedicated
@@ -374,13 +387,25 @@ on the same node or relocating it to another one that is available and healthy.
 % perform quantitative and comparative analysis of the tool
 \subsection{Analysis and refinements}\label{subsec:analysis-and-refinements}
 
-The fourth stage consists of carrying out the experimental evaluation, which will be conducted on a set of physical nodes connected on
-the same local network, in addition to testing the tool with specific experiments:
+The fourth stage consists of carrying out the experimental evaluation, which will be conducted on a set of physical
+nodes connected on the same local network.
+To avoid mixing the cost of the orchestrator with the cost of the architecture, the comparison with microVMs will be
+performed under equivalent conditions.
+Both unit types will receive the same number of dedicated cores and the same
+amount of memory, on the same nodes, and under the same workloads.
+The orchestration of the microVMs is yet to be defined.
+An existing orchestrator will be adopted, or a dedicated one
+will be built, according to which option best allows the cost of orchestration to be measured separately from the
+cost of the workloads.
+The evaluation will consist of the following experiments:
+
 \begin{itemize}
   \item \textbf{Research and explore workloads:} Workloads will be selected from established benchmarks, according to
   criteria fixed before the tests are executed, and must cover both scenarios in which the multikernel architecture tends to
-  be favored and scenarios in which it tends to be disfavored.
-  In this way, the results are not conditioned on a choice of workloads that favors the proposal and can provide clear and meaningful results.
+  be favored and scenarios in which it tends to be disfavored, that way, the results are not conditioned on a choice of
+  workloads that favors the proposal and can provide clear and meaningful results.
+  Candidate workloads includes \texttt{stress-ng} for CPU, cache, and memory, \texttt{pgbench} as a database workload,
+  and \texttt{iperf3} as I/O-intensive workloads.
   \item \textbf{Provisioning and orchestrator cost:} time between the request and the instance's response,
   broken down into partitioning, kernel boot, and availability, compared to the boot
   time of microVMs. Also analyze CPU and memory consumption of the agent and the control plane.
@@ -388,8 +413,17 @@ the same local network, in addition to testing the tool with specific experiment
   applications, comparing multikernel and microVMs.
   \item \textbf{Static and dynamic partitioning:} sequences of requests with many different sizes,
   measuring the utilization of cores and memory on each node, rejected requests, and provisioning time.
+  \item \textbf{Failure detection and recovery:} failures will be injected by forcing kernel panics in instances,
+  terminating agents, and disconnecting nodes, measuring the time to detect each failure, the time until the
+  instance is running again, the recovery success rate, and the CPU and network overhead of the monitoring itself.
+  It should be clear that the state held in the memory of the failed instance is lost, state persistence or replication
+  is a responsibility of the application.
 \end{itemize}
 
+Each experiment will be repeated at least 20 times, with results being reported as median and 99th percentile.
+The hypothesis is considered confirmed if the median share of orchestration is below a fixed threshold of the total provisioning time,
+if the degradation of the latency is significantly smaller for multikernel instances than for microVMs,
+and if the dynamic partitioning yields higher core utilization and a lower rejection rate than static partitioning.
 With this data collected, an analysis will be performed and more specific modifications to the orchestrator may be made,
 in order to improve its performance.
 
@@ -398,12 +432,13 @@ in order to improve its performance.
 The main expected result is a functional prototype of the K-ORCH tool, capable of provisioning, placing, and monitoring multikernel
 instances across multiple nodes.
 The proposal seeks to understand and explore the best paths for the specific characteristics of the multikernel architecture, creating
-this robust tool for the orchestration of distributed systems.
+a robust tool, and using it as a prototype to test the hypothesis presented in Section~\ref{sec:just}.
 
 It is also intended to create a record of the parameters used and of the greatest difficulties in carrying out orchestration,
 mapping and documenting algorithms, main ideas, performance, and other metrics.
 In this way, it will also be possible to offer a characterization of the costs and limits of distributed multikernel orchestration.
-Finally, the intention is to disseminate the proposal and the results obtained through a paper submitted
+Finally, the code, documentation, and experimental scripts will be publicly released and
+the intention is to disseminate the proposal and the results obtained through a paper submitted
 to a relevant conference or journal in this research area.
 
 \section{Schedule} \label{sec:crono}
@@ -434,27 +469,19 @@ and of the chosen applications, that is, an experimental evaluation focused on r
     Definition of the orchestrable unit and state model              &           & $\bullet$ &           &           &           &           &           &           \\
     Architecture design                                              &           &           & $\bullet$ &           &           &           &           &           \\
     Implementation of lifecycle and placement                        &           &           & $\bullet$ & $\bullet$ &           &           &           &           \\
+    Writing, delivery, and defense of the TCC                        &           &           & $\bullet$ & $\bullet$ &           &           &           &           \\
     Implementation of resource partitioning                          &           &           &           &           & $\bullet$ & $\bullet$ &           &           \\
     Implementation of instance monitoring and recovery               &           &           &           &           & $\bullet$ & $\bullet$ &           &           \\
     Preparation of the evaluation environment and reference microVMs &           &           &           &           & $\bullet$ & $\bullet$ &           &           \\
     Experimental and comparative evaluation                          &           &           &           &           &           &           & $\bullet$ & $\bullet$ \\
     Orchestrator refinement                                          &           &           &           &           &           &           & $\bullet$ & $\bullet$ \\
-    Writing of papers and the final text                             &           &           &           & $\bullet$ &           & $\bullet$ & $\bullet$ & $\bullet$ \\
+    Writing and submission of papers                                 &           &           &           &           &           & $\bullet$ & $\bullet$ & $\bullet$ \\
+    Master's defense                                                 &           &           &           &           &           &           &           & $\bullet$ \\
     \hline
   \end{tabular}
 \end{table}
 
-\section{Final Remarks} \label{sec:cons-final}
-
-This work proposes K-ORCH, an orchestrator that extends the management of multikernel instances, currently restricted to a
-single machine, to environments with multiple nodes.
-The proposal combines the model of current orchestrators with
-the partitioning mechanisms specific to the multikernel architecture and will be evaluated against orchestrated microVMs in terms of
-provisioning cost, density, and performance interference between instances.
-The expected contribution is to provide a third way for environments that need the best of containers and
-virtual machines, providing enough abstraction to scale this architecture to large production systems
-with ease and reliability.
-In addition, it is expected to characterize the costs and limits of distributed orchestration of the multikernel architecture.
+\clearpage
 
 \bibliographystyle{sbc}
 
