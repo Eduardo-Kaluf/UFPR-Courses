@@ -202,16 +202,20 @@
         \]
     \end{quote}
 
-    O adversário ganha $E_{00}$ quando responde $0$.\\
-    O adversário nunca ganha $E_{01}$.\\
-    O adversário ganha $E_{11}$ quando responde $1$.
+    No experimento $\PubKeav{\Pi'}{\mathcal{A}}{n}$, quando $b=0$, o desafiante devolve $\Enc'_{pk}(m_{0,0},m_{0,1})$, ou seja,
+    $\mathcal{A}$ está vendo exatamente $E_{00}$.
+    No caso em que $b=1$, $\mathcal{A}$ enxerga $E_{11}$.
 
-    Ou seja, o experimento todo pode ser medido como $\frac12$, chance de ganhar
-    chutando, mais a situação em que ele vence os desafios, % leitura incerta no manuscrito
-    que podem ser descritos em termos de $p_{00}, p_{01}, p_{11}$ assim:
-    \[
-        \Pr = \frac12 + \frac12\,(p_{11} - p_{00}).
-    \]
+    Dessa forma, como $b$ é uniforme, temos:
+
+    \begin{align*}
+        \Pr\!\left[\PubKeav{\Pi'}{\mathcal{A}}{n}=1\right]
+        &= \tfrac12\Pr[b'=0 \mid b=0] + \tfrac12\Pr[b'=1 \mid b=1]\\
+        &= \tfrac12(1-p_{00}) + \tfrac12\,p_{11}\\
+        &= \tfrac12 + \tfrac12\,(p_{11}-p_{00}).
+    \end{align*}
+
+    \clearpage
 
     \subsection*{b)}
 
@@ -228,32 +232,65 @@
         $|p_{11} - p_{01}| \le \negl(n)$.''
     \end{quote}
 
-    Podemos utilizar $A$ como subrotina no desafio $\Priv_{A'}$ a fim de quebrar
-    $\Pi$, basta que $A'$ responda $1$ quando $A$ responder $1$.
+    Considere que sempre estamos tratando de adversários probabilísticos que rodam em tempo polinomial.
+    Seja $\mathcal{A}$ um adversário contra $\Pi'$.
+    Podemos construir $\mathcal{A}'$ que tem como objetivo quebrar $\Pi$, dessa forma temos o
+    desafiante de $\Pi$ interagindo com $\mathcal{A}'$ e $\mathcal{A}'$ com $\mathcal{A}$:
+    \begin{enumerate}
+        \item $\mathcal{A}'$ recebe $pk$ do desafiante e executa $\mathcal{A}(pk)$, obtendo
+        $(m_{0,0},m_{0,1})$ e $(m_{1,0},m_{1,1})$.
+        \item $\mathcal{A}'$ envia ao desafiante o par $(m_{0,1},\, m_{1,1})$ e recebe
+        $c^* \leftarrow \Enc_{pk}(m_{b,1})$.
+        \item $\mathcal{A}'$ calcula $c_1 \leftarrow \Enc_{pk}(m_{0,0})$ utilizando $pk$ e entrega $(c_1, c^*)$ a $\mathcal{A}$.
+        \item $\mathcal{A}'$ devolve o bit $b'$ que receberá de $\mathcal{A}$.
+    \end{enumerate}
 
-    \begin{center}
-        \begin{tikzpicture}[>=Stealth, box/.style={draw, minimum width=1.4cm, minimum height=1.6cm}]
-            \node[box, label=above:Desafiante] (d)  at (0,0)   {};
-            \node[box, label=above:$A'$]       (ap) at (4,0)   {};
-            \node[box, label=above:$A$]        (a)  at (7.5,0) {};
-            \draw[->] ([yshift=4mm]d.east)   -- ([yshift=4mm]ap.west);
-            \draw[<-] ([yshift=-4mm]d.east)  -- node[below]{$b'$} ([yshift=-4mm]ap.west);
-            \draw[->] ([yshift=4mm]ap.east)  -- ([yshift=4mm]a.west);
-            \draw[<-] ([yshift=-4mm]ap.east) -- ([yshift=-4mm]a.west);
-        \end{tikzpicture}
-    \end{center}
+    Nesta situação, se $b=0$, $\mathcal{A}$ recebe $\Enc'_{pk}(m_{0,0},m_{0,1})$, logo vê o experimento $E_{00}$.
+    Se $b=1$, $\mathcal{A}$ recebe $\Enc'_{pk}(m_{0,0},m_{1,1})$, vendo o experimento $E_{01}$.
+    Sendo assim, pelos mesmos argumentos do item $a$:
 
-    Dessa forma, quebraríamos $\Priv_{A'}$, porém sabemos que
     \[
-        \Priv_{A'} \le \frac12 + \negl(n),
+        \Pr\!\left[\PubKeav{\Pi}{\mathcal{A}'}{n}=1\right]
+        = \tfrac12(1-p_{00}) + \tfrac12\,p_{01}
+        = \tfrac12 + \tfrac12\,(p_{01}-p_{00}).
     \]
-    logo deve ser para $A$ também:
+
+    Como $\Pi$ é CPA-segura, logo é EAV-segura também e existe $\negl_1(n)$ tal que:
+
     \begin{align*}
-        \Priv_A = \frac12 + \frac12\,(p_{01} - p_{00}) &\le \frac12 + \negl(n)\\
-        p_{01} - p_{00} &\le 2\,\negl(n) = \negl(n)\\
-        |p_{01} - p_{00}| &\le \negl(n)
+        \tfrac12 + \tfrac12\,(p_{01}-p_{00}) &\le \tfrac12 + \negl_1(n)\\
+        p_{01}-p_{00} &\le 2\negl_1(n).
     \end{align*}
-    O mesmo raciocínio segue para $|p_{11} - p_{01}|$.
+
+    Se tomarmos o mesmo experimento, mas para um adversário $\bar{\mathcal{A}}'$ que devolve $1-b'$ então temos que:
+
+    \begin{align*}
+        \Pr\!\left[\PubKeav{\Pi}{\bar{\mathcal{A}}'}{n}=1\right]
+        &= \tfrac12\,p_{00} + \tfrac12\,(1-p_{01})\\
+        &= \tfrac12 + \tfrac12\,(p_{00}-p_{01})
+    \end{align*}
+
+    Sendo assim:
+
+    \begin{align*}
+        \tfrac12 + \tfrac12\,(p_{00}-p_{01}) &\le \tfrac12 + \negl_2(n),\\
+        p_{00}-p_{01} &\le 2\negl_2(n).
+    \end{align*}
+
+    Finalmente temos que:
+
+    \begin{align*}
+        |p_{01}-p_{00}| &\le 2\max(\negl_1,\negl_2)(n)\\
+        |p_{01}-p_{00}| &\le \negl(n).
+    \end{align*}
+
+    Para adaptar a fim de provar $|p_{11}-p_{01}| \le \negl(n)$ basta que
+    $\mathcal{A}'$ envie $(m_{0,0},\, m_{1,0})$, recebendo $c^*$, calculando
+    $c_2 \leftarrow \Enc_{pk}(m_{1,1})$ e entregando $(c^*, c_2)$, dessa forma, com $b=0$ o
+    adversário enxerga $E_{01}$ e com $b=1$ enxerga $E_{11}$.
+    O restante segue da mesma forma.
+
+    \clearpage
 
     \subsection*{c)}
 
@@ -266,22 +303,36 @@
         \]
     \end{quote}
 
+    Seja $\mathcal{A}$ um adversário contra $\Pi'$.
     Pela desigualdade triangular:
+
     \[
         |p_{11} - p_{00}| = |p_{11} - p_{01} + p_{01} - p_{00}|
         \le |p_{11} - p_{01}| + |p_{01} - p_{00}|.
     \]
+
+    Pelo item $a$:
+
+    \begin{align*}
+        \Pr\!\left[\PubKeav{\Pi'}{\mathcal{A}}{n}=1\right]
+        &= \tfrac12 + \tfrac12\,(p_{11} - p_{00})\\
+        &\le \tfrac12 + \tfrac12\,|p_{11} - p_{00}|\\
+        &\le \tfrac12 + \tfrac12\bigl(|p_{11} - p_{01}| + |p_{01} - p_{00}|\bigr).
+    \end{align*}
+
+    Pelo item $b$, existem $\negl_a$ e $\negl_b$ tais que $|p_{01}-p_{00}| \le \negl_a(n)$ e $|p_{11}-p_{01}| \le \negl_b(n)$.
+
     Logo:
     \[
-        \PubK = \frac12 + \frac12\,(p_{11} - p_{00})
-        \le \frac12 + \frac12\bigl(|p_{11} - p_{01}| + |p_{01} - p_{00}|\bigr).
+        \Pr\!\left[\PubKeav{\Pi'}{\mathcal{A}}{n}=1\right]
+        \le \tfrac12 + \tfrac12\bigl(\negl_a(n) + \negl_b(n)\bigr)
+        = \tfrac12 + \negl'(n),
     \]
-    Pelo exercício b), temos que
-    \begin{align*}
-        \PubK &\le \frac12 + \frac12\bigl(\negl(n) + \negl(n)\bigr)\\
-        &\le \frac12 + \negl'(n).
-    \end{align*}
-    Sendo assim, $\Pi'$ é seguro.
+
+    onde $\negl' = \frac12(\negl_a + \negl_b)$ também é uma função negligenciável.
+
+    Como isso vale para todo adversário $\mathcal{A}$, $\Pi'$ é EAV-segura e, como consequência de ser uma cifra
+    de chave pública, é também CPA-segura.
 
     \clearpage
 
