@@ -1,0 +1,665 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.82]{beramono} % monoespaçada com negrito forte
+\usepackage[brazilian]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc,fit}
+\usetheme{default}
+\usecolortheme{orchid}
+\usefonttheme[onlymath]{serif}
+\beamertemplatenavigationsymbolsempty
+\hypersetup{pdfpagemode=FullScreen}
+
+% ---------------------------------------------------------------------
+% Cores (paleta única das figuras)
+%   ufpr       contorno externo das figuras, setas, destaques escuros
+%   ufprlight  aplicações
+%   kfill      camadas de software e hardware (kernels, runtime, hipervisor)
+%   kdraw      contorno de todas as caixas internas
+%   hostc      processadores e kernel hospedeiro
+%   ufpr!20    memória e réplicas de estado
+%   ink        texto das figuras
+\definecolor{ufpr}{RGB}{52,92,135}
+\definecolor{ufprlight}{RGB}{214,226,238}
+\definecolor{hostc}{RGB}{200,200,200}
+\definecolor{kfill}{HTML}{EFF3F7}\definecolor{kdraw}{HTML}{CBD5E1}
+\definecolor{ink}{HTML}{1E293B}
+\setbeamercolor{frametitle}{fg=ufpr}
+\setbeamercolor{structure}{fg=ufpr}
+\setbeamercolor{block title}{bg=ufpr,fg=white}
+\setbeamercolor{block body}{bg=ufprlight}
+\setbeamercolor{alerted text}{fg=black}
+\setbeamertemplate{itemize items}[circle]
+% Espaçamento uniforme entre itens em todas as listas
+\let\origitemize\itemize
+\renewcommand{\itemize}{\origitemize\small\setlength{\itemsep}{3pt}\setlength{\parsep}{0pt}}
+
+
+% Estilos das figuras
+\tikzset{
+    card/.style={draw=ufpr, thick, fill=white, rounded corners=3pt},
+    chip/.style={font=\ttfamily\tiny\bfseries, text=ink, inner sep=2pt},
+    tag/.style={chip, draw=kdraw, fill=kfill, rounded corners=1pt},
+    ltitle/.style={font=\scriptsize\bfseries, text=ink},
+    head/.style={font=\ttfamily\small\bfseries, text=ink},
+    mkcap/.style={font=\scriptsize\itshape, text=gray, align=center},
+}
+% \layer{xcenter}{ytop}{altura}{preenchimento}{borda}{titulo}
+\newcommand{\layer}[6]{%
+    \draw[fill=#4, draw=#5, rounded corners=2pt] (#1-19,#2) rectangle (#1+19,#2-#3);
+    \node[ltitle] at (#1,#2-3) {#6};}
+
+\newcommand{\refs}[1]{{\scriptsize\color{gray}#1}}
+
+% Numeracao de paginas (centro inferior, entre o logo e o grafismo)
+\setbeamertemplate{footline}{%
+    \hfill{\usebeamerfont{page number in head/foot}\footnotesize\color{gray}\insertframenumber\,/\,\inserttotalframenumber}\hfill\vspace*{3mm}}
+
+
+\tikzset{
+    dbox/.style={draw=ufpr, fill=ufpr, text=white, rounded corners=2pt, align=center, font=\footnotesize},
+    arr/.style={-{Stealth[length=2mm]}, thick, ufpr},
+}
+
+% ---------------------------------------------------------------------
+% Titulo (template UFPR)
+\makeatletter
+\newcommand\titlegraphicii[1]{\def\inserttitlegraphicii{#1}}
+\titlegraphicii{}
+\setbeamertemplate{title page}
+{
+    \vbox{}
+    {\usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\hfill\inserttitlegraphicii\par}
+    \begin{centering}
+        \begin{beamercolorbox}[sep=2pt,center]{institute}
+      \usebeamerfont{institute}\insertinstitute
+        \end{beamercolorbox}
+        \begin{beamercolorbox}[sep=12pt,center]{title}
+      \usebeamerfont{title}\inserttitle\par%
+      \ifx\insertsubtitle\@empty%
+      \else%
+          \vskip0.2em%
+              {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+      \fi%
+        \end{beamercolorbox}%
+        \vskip0.2em\par
+        \begin{beamercolorbox}[sep=2pt,center]{author}
+      \usebeamerfont{author}\insertauthor
+        \end{beamercolorbox}
+        \begin{beamercolorbox}[sep=4pt,center]{date}
+      \usebeamerfont{date}\insertdate
+        \end{beamercolorbox}
+    \end{centering}
+}
+\makeatother
+
+\title{K-ORCH: orquestrador para instâncias multikernel distribuídas}
+\subtitle{Plano de trabalho}
+\author{\textbf{Eduardo Kaluf}\\[1pt]{\footnotesize eduardokaluf@ufpr.br}\\[3pt]{\small Orientador: Prof. Carlos A. Maziero}}
+\institute{UNIVERSIDADE FEDERAL DO PARANÁ \\
+SETOR DE CIÊNCIAS EXATAS \\
+DEPARTAMENTO DE INFORMÁTICA}
+\date{Novembro de 2026}
+
+\begin{document}
+
+% =====================================================================
+    {%
+        \usebackgroundtemplate{\centering\includegraphics[width=\paperwidth]{CapaUFPR.png}}
+        \setbeamertemplate{footline}{}
+        \setbeamertemplate{headline}{\vskip2mm\hfill{\footnotesize\color{gray}\insertframenumber\,/\,\inserttotalframenumber}\hspace*{4mm}}
+        \begin{frame}
+            \vspace{-12mm}
+            \titlepage
+        \end{frame}
+    }
+
+    {%
+        \usebackgroundtemplate{\centering\includegraphics[width=\paperwidth]{FundoUFPR2.png}}
+
+% =====================================================================
+        \begin{frame}{Evolução da arquitetura multikernel}
+            \centering
+            \vspace{4mm}
+            \begin{tikzpicture}[x=12.9mm]
+    \draw[ufpr, very thick, -{Stealth}] (0,0) -- (10.6,0);
+    \foreach \x/\y/\n/\h/\c in {
+        0.4/1995/Hive/0.45/ufpr,
+        1.5/1997/Disco/1.05/black,
+        2.6/2000/{Cellular Disco}/0.45/black,
+        3.7/2008/Corey/1.05/black,
+        4.8/2009/{Barrelfish}/0.45/ufpr,
+        5.9/2012/FusedOS/1.05/black,
+        7.0/2014/IHK/0.45/black,
+        8.1/2015/Pisces/1.05/black} {
+        \fill[ufpr] (\x,0) circle (2.2pt);
+        \draw[gray] (\x,0) -- (\x,\h-0.12);
+        \node[font=\scriptsize\bfseries, text=\c, above] at (\x,\h-0.15) {\n};
+        \node[font=\scriptsize, below] at (\x,-0.12) {\y};
+    }
+    \fill[ufpr] (9.6,0) circle (3.2pt);
+    \draw[gray] (9.6,0) -- (9.6,0.33);
+    \node[font=\scriptsize\bfseries, ufpr, above] at (9.6,0.3) {Linux};
+    \node[font=\scriptsize, below] at (9.6,-0.12) {2025};
+            \end{tikzpicture}
+
+            \vspace{8mm}
+            \begin{columns}[T]
+                \begin{column}{0.38\textwidth}
+                    \textbf{\small Multiprocessadores (1995--2000)}\\[1pt] % exceção: título menor para caber numa linha
+                    \setlength{\leftmargini}{1em}\begin{itemize}\item VMs especializadas e contenção de falhas em ``clusters virtuais''\end{itemize}
+                \end{column}
+                \begin{column}{0.30\textwidth}
+                    \textbf{\small Manycore (2008--2009)}\\[1pt] % exceção: título menor para caber numa linha
+                    \setlength{\leftmargini}{1em}\begin{itemize}\item Kernel único por núcleo e comunicação explícita por mensagens\end{itemize}
+                \end{column}
+                \begin{column}{0.32\textwidth}
+                    \textbf{\small HPC e Linux (2012--2025)}\\[1pt] % exceção: título menor para caber numa linha
+                    \setlength{\leftmargini}{1em}\begin{itemize}\item Kernels leves ao lado do Linux e instâncias Linux particionadas\end{itemize}
+                \end{column}
+            \end{columns}
+
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Arquitetura multikernel: Hive}
+            \begin{columns}[c]
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=1mm,y=1mm]
+                        % maquina
+                        \draw[ufpr, thick, rounded corners=3pt] (-35,31) rectangle (35,-27);
+                        % aplicacoes e imagem unica
+                        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (-32,28) rectangle (32,22);
+                        \node[font=\scriptsize\bfseries, text=ink] at (0,25) {Aplicações};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-32,20) rectangle (32,14.5);
+                        \node[font=\scriptsize\bfseries, text=ink] at (0,17.25) {Imagem única do sistema};
+                        % celulas
+                        \foreach \i/\x in {1/-24,2/-8,3/8,4/24} {
+                            \ifnum\i=3
+                            \draw[fill=hostc!45, draw=gray, dashed, rounded corners=2pt] (\x-7.3,12) rectangle (\x+7.3,-15.5);
+                            \else
+                                \draw[fill=white, draw=kdraw, rounded corners=2pt] (\x-7.3,12) rectangle (\x+7.3,-15.5);
+                            \fi
+                            \node[font=\tiny\bfseries, text=ink] at (\x,9.5) {Célula \i};
+                            \draw[fill=kfill, draw=kdraw, rounded corners=1pt] (\x-6,7) rectangle (\x+6,2);
+                            \node[font=\tiny\bfseries, align=center] at (\x,4.5) {Kernel Hive};
+                            \draw[fill=hostc, draw=kdraw] (\x-6,0) rectangle (\x-0.5,-5);
+                            \draw[fill=hostc, draw=kdraw] (\x+0.5,0) rectangle (\x+6,-5);
+                            \node[font=\tiny\bfseries] at (\x-3.25,-2.5) {CPU};
+                            \node[font=\tiny\bfseries] at (\x+3.25,-2.5) {CPU};
+                            \draw[fill=ufpr!20, draw=kdraw] (\x-6,-7) rectangle (\x+6,-12);
+                            \node[font=\tiny\bfseries] at (\x,-9.5) {Memória};
+                        }
+                        % falha
+                        \node[font=\tiny\bfseries, text=ink] at (8,-13.8) {falha};
+                        % interconexao
+                        \draw[fill=kfill, draw=kdraw, rounded corners=1.5pt] (-32,-19) rectangle (32,-24);
+                        \node[font=\tiny\bfseries, text=ink] at (0,-21.5) {Interconexão: RPC e memória compartilhada};
+                        \foreach \x in {-24,-8,8,24} \draw[ufpr, thick] (\x,-15.5) -- (\x,-19);
+                    \end{tikzpicture}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \begin{itemize}
+                        \item Divide um multiprocessador em células que executam sua própria instância do kernel Hive
+                        \item Falhas de hardware ou software ficam contidas na célula atingida
+                        \item Comunicação por memória compartilhada e RPC
+                        \item Política global em um processo de usuário
+                    \end{itemize}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Arquitetura multikernel: Barrelfish}
+            \begin{columns}[c]
+                \begin{column}{0.45\textwidth}
+                    \begin{itemize}
+                        \item Trata a máquina física como uma rede de núcleos independentes
+                        \item Possui exatamente um kernel por núcleo
+                        \item O estado é replicado entre os núcleos, não compartilhado
+                        \item Comunicação explícita por mensagens entre monitores
+                    \end{itemize}
+                \end{column}
+                \begin{column}{0.55\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=1mm,y=1mm]
+                        % maquina
+                        \draw[ufpr, thick, rounded corners=3pt] (-35,31) rectangle (35,-20);
+                        % aplicacoes
+                        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (-32,28) rectangle (32,22);
+                        \node[font=\scriptsize\bfseries, text=ink] at (0,25) {Aplicações};
+                        % nucleos
+                        \foreach \x/\arch in {-25.5/x86,-8.5/x86,8.5/ARM,25.5/GPU} {
+                            \draw[fill=ufpr!20, draw=kdraw, rounded corners=1pt] (\x-6,19) rectangle (\x+6,14);
+                            \node[font=\tiny\bfseries] at (\x,16.5) {Réplica};
+                            \draw[fill=white, draw=kdraw, rounded corners=1pt] (\x-6,12) rectangle (\x+6,6.5);
+                            \node[font=\tiny\bfseries, text=ink] at (\x,9.25) {Monitor};
+                            \draw[fill=kfill, draw=kdraw, rounded corners=1pt] (\x-6,1.5) rectangle (\x+6,-4);
+                            \node[font=\tiny\bfseries] at (\x,-1.25) {CPU driver};
+                            \draw[fill=hostc, draw=kdraw] (\x-6,-8) rectangle (\x+6,-13);
+                            \node[font=\tiny\bfseries] at (\x,-10.5) {\arch};
+                        }
+                        % mensagens entre monitores
+                        \foreach \a/\b in {-19.5/-14.5,-2.5/2.5,14.5/19.5} \draw[arr, <->] (\a,9.25) -- (\b,9.25);
+                    \end{tikzpicture}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \section{Introdução}
+
+        \begin{frame}{Arquitetura multikernel: multikernel no Linux}
+            \begin{columns}[c]
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=6.4mm,y=6.4mm]
+        \draw[ufpr, thick, rounded corners] (-0.3,-3.6) rectangle (10.3,3.0);
+        \node[font=\scriptsize\bfseries, ufpr, anchor=west] at (-0.2,2.6) {Máquina Física};
+        % nucleos
+        \foreach \i in {0,...,9} {
+            \ifnum\i<2 \def\c{hostc}\else\ifnum\i<5 \def\c{ufprlight}\else\def\c{ufpr!45}\fi\fi
+            \fill[\c, draw=kdraw] (\i+0.08,0.7) rectangle (\i+0.92,1.5);
+        }
+        \draw[thick, gray, |-|] (0.08,1.75) -- (9.92,1.75);
+        \node[font=\tiny, gray] at (5,2.1) {núcleos};
+        % kernels
+        \draw[kdraw, fill=hostc, rounded corners=2pt] (0.08,-0.6) rectangle (1.92,0.4);
+        \node[font=\tiny\bfseries, align=center] at (1,-0.1) {Kernel\\hospedeiro};
+        \draw[kdraw, fill=ufprlight, rounded corners=2pt] (2.08,-0.6) rectangle (4.92,0.4);
+        \node[font=\tiny\bfseries, align=center] at (3.5,-0.1) {Kernel A\\(tempo real)};
+        \draw[kdraw, fill=ufpr!45, rounded corners=2pt] (5.08,-0.6) rectangle (9.92,0.4);
+        \node[font=\tiny\bfseries, align=center] at (7.5,-0.1) {Kernel B\\(propósito geral)};
+        % memoria
+        \fill[hostc, draw=kdraw] (0.08,-2.0) rectangle (1.92,-1.2);
+        \fill[ufprlight, draw=kdraw] (2.08,-2.0) rectangle (4.92,-1.2);
+        \fill[ufpr!45, draw=kdraw] (5.08,-2.0) rectangle (9.92,-1.2);
+        \foreach \x in {1,3.5,7.5} \node[font=\tiny\bfseries] at (\x,-1.6) {memória};
+        \draw[thick, gray, |-|] (2.08,-2.3) -- (9.92,-2.3);
+        \node[font=\tiny, gray] at (6,-2.8) {instâncias: núcleos e memória dedicados};
+                    \end{tikzpicture}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \begin{itemize}
+                        \item Quantidade configurável de núcleos dedicados com memória, imagem e kernel próprios
+                        \item Kernels com configurações distintas e especializadas
+                        \item Núcleos e memória realocáveis
+                        \item Kernel de dispositivos centraliza E/S e dispositivos virtuais
+                    \end{itemize}
+                    \vspace{1mm}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Contêineres}
+            \begin{columns}[c]
+                \begin{column}{0.50\textwidth}
+                    \small Empacotam a aplicação e suas dependências, executando como processos isolados sobre um mesmo kernel,
+                                  utilizando \textit{namespaces} para isolamento e \textit{cgroups} para controlar o limite de recursos.
+
+                    \vspace{2mm}
+                    \setlength{\leftmargini}{1em}%
+                    \textbf{Vantagens}
+                    \begin{itemize}
+                        \item Inicialização em milissegundos
+                        \item Escalabilidade alta por nó
+                    \end{itemize}
+                    \vspace{1mm}
+                    \textbf{Desvantagens}
+                    \begin{itemize}
+                        \item Interferência entre cargas
+                        \item Impossibilidade de kernel especializado
+                    \end{itemize}
+                    \vspace{1mm}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=1.25mm,y=1.25mm]
+                        \draw[ufpr, thick, rounded corners=3pt] (-25,3) rectangle (25,-40);
+        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (-22,0) rectangle (-1,-9);
+                        \node[chip] at (-11.5,-4.5) {App A + Dependências};
+                        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (1,0) rectangle (22,-9);
+                        \node[chip] at (11.5,-4.5) {App B + Dependências};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-11) rectangle (22,-17);
+                        \node[ltitle] at (0,-14) {Runtime (Docker)};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-19) rectangle (22,-29);
+                        \node[ltitle] at (0,-21.5) {Kernel do hospedeiro};
+                        \node[tag] at (-9,-25.5) {namespaces}; \node[tag] at (9,-25.5) {cgroups};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-31) rectangle (22,-37);
+                        \node[ltitle] at (0,-34) {Hardware};
+                    \end{tikzpicture}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Máquinas virtuais}
+            \begin{columns}[c]
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=1.1mm,y=1.1mm]
+                        \draw[ufpr, thick, rounded corners=3pt] (-25,3) rectangle (25,-37);
+        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (-22,0) rectangle (-1,-7);
+                        \node[chip] at (-11.5,-3.5) {App};
+                        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (1,0) rectangle (22,-7);
+                        \node[chip] at (11.5,-3.5) {App};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-9) rectangle (-1,-16);
+                        \node[chip] at (-11.5,-12.5) {Kernel convidado};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (1,-9) rectangle (22,-16);
+                        \node[chip] at (11.5,-12.5) {Kernel convidado};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-18) rectangle (22,-25);
+                        \node[ltitle] at (0,-21.5) {Hipervisor};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-27) rectangle (22,-34);
+                        \node[ltitle] at (0,-30.5) {Hardware};
+                    \end{tikzpicture}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \small Cada VM executa um sistema operacional completo, com seu próprio kernel, sobre um hipervisor
+                    que virtualiza o hardware e intercepta instruções privilegiadas.
+
+                    \vspace{2mm}
+                    \setlength{\leftmargini}{1em}%
+                    \textbf{Vantagens}
+                    \begin{itemize}
+                        \item Kernel próprio e configurável por VM
+                        \item Isolamento forte entre VMs garantido pelo hipervisor
+                    \end{itemize}
+                    \vspace{1mm}
+                    \textbf{Desvantagens}
+                    \begin{itemize}
+                        \item Sobrecarga de virtualização (instruções, E/S, rede, memória)
+                        \item Boot lento, na ordem de segundos
+                    \end{itemize}
+                    \vspace{1mm}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Máquinas virtuais, contêineres e multikernel}
+            \centering
+            \begin{tikzpicture}[x=1mm,y=1mm, scale=0.86, every node/.style={transform shape}]
+                \begin{scope}[shift={(-4,0)}]
+                % ---------------- Maquinas virtuais
+                \draw[card] (-67,0) rectangle (-23,-66);
+                \node[head] at (-45,-6) {MÁQUINAS VIRTUAIS};
+                \layer{-45}{-11}{10}{ufprlight}{kdraw}{Aplicações}
+                \node[tag] at (-49,-17.5) {App}; \node[tag] at (-41,-17.5) {App};
+                \layer{-45}{-23}{10}{kfill}{kdraw}{Kernels convidados}
+                \node[tag] at (-50,-29.5) {Kernel}; \node[tag] at (-40,-29.5) {Kernel};
+                \layer{-45}{-35}{10}{kfill}{kdraw}{Hipervisor + hospedeiro}
+                \node[tag] at (-51,-41.5) {Traduções}; \node[tag] at (-38,-41.5) {E/S emulada};
+                \layer{-45}{-47}{7}{kfill}{kdraw}{Hardware}
+                \node[mkcap] at (-45,-60) {Dois kernels e um hipervisor\\entre a aplicação e o hardware};
+
+                \end{scope}
+
+                % ---------------- Conteineres
+                \draw[card] (-22,0) rectangle (22,-66);
+                \node[head] at (0,-6) {CONTÊINERES};
+                \layer{0}{-11}{10}{ufprlight}{kdraw}{Aplicações}
+                \node[tag] at (-4,-17.5) {App}; \node[tag] at (4,-17.5) {App};
+                \layer{0}{-23}{10}{kfill}{kdraw}{Kernel compartilhado}
+                \node[tag] at (0,-29.5) {Kernel único};
+                \layer{0}{-35}{7}{kfill}{kdraw}{Hardware}
+                \node[mkcap] at (0,-61) {Um kernel compartilhado\\por todas as cargas};
+
+                \begin{scope}[shift={(4,0)}]
+                % ---------------- Multikernel
+                \draw[card] (23,0) rectangle (67,-66);
+                \node[head] at (45,-6) {MULTIKERNEL};
+                \layer{45}{-11}{10}{ufprlight}{kdraw}{Aplicações}
+                \node[tag] at (41,-17.5) {App}; \node[tag] at (49,-17.5) {App};
+                \layer{45}{-23}{16}{kfill}{kdraw}{Kernels independentes}
+                \node[tag] at (39,-29.5) {Kernel A}; \node[tag] at (51,-29.5) {Kernel B};
+                \node[tag] at (45,-35.5) {Kernel de dispositivos};
+                \layer{45}{-41}{15}{kfill}{kdraw}{Hardware}
+                \node[tag] at (45,-47.5) {Núcleos dedicados};
+                \node[tag] at (45,-52.5) {Filas de hardware};
+                \node[mkcap] at (45,-61) {Nada entre a aplicação\\e os núcleos};
+                \end{scope}
+            \end{tikzpicture}
+
+            \vspace{-1mm}
+            \refs{Multikernel Technologies, \url{https://multikernel.io/technology.html}}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{MicroVMs}
+            \begin{columns}[c]
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=1mm,y=1mm]
+                        \draw[ufpr, thick, rounded corners=3pt] (-25,3) rectangle (25,-39);
+        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (-22,0) rectangle (-1,-7);
+                        \node[chip] at (-11.5,-3.5) {App};
+                        \draw[fill=ufprlight, draw=kdraw, rounded corners=2pt] (1,0) rectangle (22,-7);
+                        \node[chip] at (11.5,-3.5) {App};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-8.5) rectangle (-1,-15);
+                        \node[chip] at (-11.5,-11.75) {Kernel mínimo};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (1,-8.5) rectangle (22,-15);
+                        \node[chip] at (11.5,-11.75) {Kernel mínimo};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-16.5) rectangle (-1,-23);
+                        \node[chip] at (-11.5,-19.75) {Hipervisor mínimo};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (1,-16.5) rectangle (22,-23);
+                        \node[chip] at (11.5,-19.75) {Hipervisor mínimo};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-24.5) rectangle (22,-30);
+                        \node[ltitle] at (0,-27.25) {Kernel hospedeiro};
+                        \draw[fill=kfill, draw=kdraw, rounded corners=2pt] (-22,-31.5) rectangle (22,-36);
+                        \node[ltitle] at (0,-33.75) {Hardware};
+                    \end{tikzpicture}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \begin{itemize}
+                        \item MicroVMs são instâncias mínimas, possuindo apenas dispositivos essenciais para a aplicação
+                        \item Referência para avaliação experimental: kernel próprio por unidade e orquestração madura
+                        \item Comparadas em condições equivalentes, mesmos núcleos, memória, nós e cargas
+                    \end{itemize}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Orquestração e o problema}
+            \begin{columns}[T]
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{itemize}
+                        \item Contêineres e VMs ganharam muita popularidade por conta dos orquestradores
+                        \item Orquestradores focam em manter um estado desejado e balancear suas unidades, além de monitorá-las e
+                        prover meios de escalar suas instâncias
+                        \item As pesquisas em multikernel sempre tiveram foco em uma única máquina e na arquitetura em si
+                    \end{itemize}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \centering
+                    \begin{tikzpicture}[x=1mm,y=1mm]
+                        \tikzset{tool/.style={dbox, minimum width=24mm, minimum height=6mm, font=\scriptsize}}
+                        \draw[ufpr, thick, rounded corners=3pt] (-28,6) rectangle (2,-30);
+                        \node[tool] at (-13,0) {Kubernetes};
+                        \node[tool] at (-13,-8) {Docker Swarm};
+                        \node[tool] at (-13,-16) {Apache Mesos};
+                        \node[tool] at (-13,-24) {...};
+                    \end{tikzpicture}
+                    \vspace{2mm}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Pergunta de pesquisa e hipótese}
+            \small
+            \textbf{Pergunta} -- Quais mecanismos são necessários para provisionar, posicionar e monitorar instâncias
+            multikernel em vários nós,
+            e qual o custo desse gerenciamento em relação à orquestração de microVMs?\\
+            \vspace{10mm}
+            \textbf{Hipótese} -- É possível orquestrar instâncias multikernel em vários nós de modo que:
+            \begin{itemize}
+                \item O custo introduzido pelo orquestrador seja uma pequena fração do tempo total de provisionamento (H1)
+                \item As instâncias apresentem menos interferência de desempenho entre si do que microVMs, sob as mesmas
+                cargas e orquestração equivalente (H2)
+                \item O particionamento dinâmico aumente a utilização dos nós em relação ao estático (H3)
+            \end{itemize}
+        \end{frame}
+
+        \section{Proposta}
+
+        \begin{frame}{Proposta: K-ORCH}
+            \begin{columns}[T]
+                \begin{column}{0.50\textwidth}
+                    \textbf{Funcionamento:}
+                    \setlength{\leftmargini}{1em}
+                    \begin{itemize}
+                        \item Pedido descrevendo o estado desejado
+                        \item Escolha do nó por núcleos e memória livres, e por critérios de balanceamento
+                        \item Agente particiona o hardware local e inicializa a instância
+                        \item Detecção de falhas e recuperação
+                        \item Escolha de particionamento estático ou dinâmico
+                    \end{itemize}
+                \end{column}
+                \begin{column}{0.50\textwidth}
+                    \textbf{Escopo:}
+                    \setlength{\leftmargini}{1em}
+                    \begin{itemize}
+                        \item Orquestração em uma rede local, sob domínio administrativo único
+                        \item Fora do escopo: \textit{datacenters}, múltiplos domínios e comunicação pela Internet
+                        \item Isolamento e segurança entre instâncias pertencem ao modelo da arquitetura e não ao escopo da pesquisa
+                    \end{itemize}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Objetivos}
+            \begin{itemize}
+                \item Levantar o estado da arte
+                \item Definir formalmente a unidade orquestrável
+                \item Prototipar a arquitetura
+                \item Implementar o ciclo de vida e o posicionamento
+                \item Implementar o particionamento
+                \item Implementar o monitoramento
+                \item Avaliar experimentalmente
+            \end{itemize}
+        \end{frame}
+
+% =====================================================================
+        \section{Metodologia}
+
+        \begin{frame}{Metodologia}
+            \framesubtitle{Pesquisa teórico-prática, quantitativa e exploratória}
+            \begin{columns}[T,onlytextwidth]
+                \begin{column}{0.57\textwidth}
+                    \setlength{\leftmargini}{1em}%
+                    \textbf{1. Caracterizar}
+                    \begin{itemize}
+                        \item Estado da arte: orquestradores e gerência de multikernels
+                        \item Multikernel com versão e hardware fixados
+                    \end{itemize}
+                    \vspace{1mm}
+                    \textbf{2. Prototipar}
+                    \begin{itemize}
+                        \item Unidade orquestrável: núcleos, memória, imagem, kernel e estado desejado
+                        \item Arquitetura: plano de controle, agentes e comunicação
+                        \item Ciclo de vida (criar, iniciar, parar e remover) e posicionamento \textit{first-fit} ou duas escolhas
+                    \end{itemize}
+                \end{column}
+                \begin{column}{0.39\textwidth}
+                    \setlength{\leftmargini}{1em}%
+                    \textbf{3. Particionar e monitorar}
+                    \begin{itemize}
+                        \item Particionamento estático ou dinâmico
+                        \item Detecção de falhas: reiniciar ou reposicionar a instância
+                    \end{itemize}
+                    \vspace{1mm}
+                    \textbf{4. Avaliar}
+                    \begin{itemize}
+                        \item Experimentos em nós físicos
+                        \item Comparar a microVMs e entre modos de particionamento
+                    \end{itemize}
+                \end{column}
+            \end{columns}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Avaliação experimental}
+            \centering
+            \vspace{2mm}
+            \renewcommand{\arraystretch}{1.9}
+            \small
+            \begin{tabular}{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{5.0cm}>{\raggedright\arraybackslash}p{4.0cm}}
+                \textbf{Experimento} & \textbf{Métrica} & \textbf{Avaliação} \\
+                \hline
+                Provisionamento           & tempo do pedido até a instância estar saudável  & custo do orquestrador (H1) \\
+                Densidade e interferência & instâncias por nó e latência sob grandes cargas & isolamento de desempenho (H2) \\
+                Particionamento           & utilização dos nós e pedidos rejeitados         & estático $\times$ dinâmico (H3) \\
+                Falhas                    & detecção, recuperação e taxa de sucesso         & recuperação \\
+                \hline
+            \end{tabular}
+        \end{frame}
+
+% =====================================================================
+        \section{Resultados esperados e cronograma}
+
+        \begin{frame}{Resultados esperados}
+            \begin{itemize}
+                \item Protótipo do K-ORCH, com código e scripts públicos
+                \item Modelo de instância e de estado desejado
+                \item Custos e limites da orquestração em comparação com microVMs
+                \item Divulgação em artigo para evento ou periódico
+                \item Ganhos esperados: menor interferência entre instâncias e kernels especializados por carga, com maior desempenho
+                \item Custos esperados: menor densidade por nó e tempo de boot maior
+            \end{itemize}
+        \end{frame}
+
+% =====================================================================
+        \begin{frame}{Cronograma}
+            \centering
+            \scriptsize
+            \renewcommand{\arraystretch}{1.12}
+            \setlength{\tabcolsep}{3.5pt}
+            \begin{tabular}{p{8.4cm}cccccccc}
+                \hline
+                \textbf{Atividade} & T1 & T2 & T3 & T4 & T5 & T6 & T7 & T8 \\
+                \hline
+                Levantamento do estado da arte & $\bullet$ & $\bullet$ &  &  &  &  &  &  \\
+                Caracterização experimental da plataforma multikernel & $\bullet$ & $\bullet$ &  &  &  &  &  &  \\
+                Definição da unidade orquestrável e do modelo de estado &  & $\bullet$ &  &  &  &  &  &  \\
+                Projeto da arquitetura &  &  & $\bullet$ &  &  &  &  &  \\
+                Implementação do ciclo de vida e do posicionamento &  &  & $\bullet$ & $\bullet$ &  &  &  &  \\
+                Redação, entrega e defesa do TCC &  &  & $\bullet$ & $\bullet$ &  &  &  &  \\
+                Implementação do particionamento de recursos &  &  &  &  & $\bullet$ & $\bullet$ &  &  \\
+                Implementação do monitoramento e da recuperação de instâncias &  &  &  &  & $\bullet$ & $\bullet$ &  &  \\
+                Preparação do ambiente de avaliação e das microVMs de referência &  &  &  &  & $\bullet$ & $\bullet$ &  &  \\
+                Avaliação experimental e comparativa &  &  &  &  &  &  & $\bullet$ & $\bullet$ \\
+                Refinamento do orquestrador &  &  &  &  &  &  & $\bullet$ & $\bullet$ \\
+                Redação e submissão de artigos &  &  &  &  &  & $\bullet$ & $\bullet$ & $\bullet$ \\
+                Defesa do mestrado &  &  &  &  &  &  &  & $\bullet$ \\
+                \hline
+            \end{tabular}
+        \end{frame}
+
+
+
+    }
+
+% =====================================================================
+    {%
+        \usebackgroundtemplate{\centering\includegraphics[width=\paperwidth]{CapaUFPR.png}}
+        \setbeamertemplate{footline}{}
+        \setbeamertemplate{headline}{\vskip2mm\hfill{\footnotesize\color{gray}\insertframenumber\,/\,\inserttotalframenumber}\hspace*{4mm}}
+        \begin{frame}
+            \centering
+            \vspace{-14mm}
+            {\Huge\bfseries\color{ufpr} Obrigado!}\\[4mm]
+            {\small\textbf{Eduardo Kaluf}}\\[1mm]
+            {\small eduardokaluf@ufpr.br}\\[1mm]
+            {\footnotesize Orientador: Prof. Carlos A. Maziero}
+        \end{frame}
+    }
+
+\end{document}
