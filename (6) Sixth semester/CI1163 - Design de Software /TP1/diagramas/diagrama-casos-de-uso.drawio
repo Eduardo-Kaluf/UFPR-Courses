@@ -1,0 +1,82 @@
+<mxfile host="drawio">
+  <diagram name="Diagrama de Casos de Uso" id="Diagrama-de-Casos-de-Uso">
+    <mxGraphModel dx="960" dy="785" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="960" pageHeight="785" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sistema" value="Plataforma de Ensino de Programação" style="rounded=0;html=0;verticalAlign=top;fontStyle=1;fillColor=#FFFFFF;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="230" y="20" width="430" height="645" as="geometry" />
+        </mxCell>
+        <mxCell id="uc1" value="Realizar cadastro" style="ellipse;html=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="310" y="75.0" width="230" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" value="Realizar login" style="ellipse;html=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="310" y="175.0" width="230" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="uc3" value="Emitir Certificado de Conclusão" style="ellipse;html=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="310" y="275.0" width="230" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" value="Realizar Aula Interativa" style="ellipse;html=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="310" y="375.0" width="230" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="uc5" value="Criação de Curso" style="ellipse;html=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="310" y="475.0" width="230" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="uc6" value="Gerenciar Conteúdo do Curso" style="ellipse;html=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="310" y="575.0" width="230" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="visitante" value="Visitante" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=0;outlineConnect=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="80" y="122.0" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="aluno" value="Aluno" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=0;outlineConnect=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="80" y="372.0" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="professor" value="Professor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=0;outlineConnect=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="80" y="602.0" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="google" value="Serviço de Autenticação" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=0;outlineConnect=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="800" y="122.0" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="compilador" value="Compilador Integrado" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=0;outlineConnect=0;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="800" y="372.0" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="visitante" target="uc1">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="visitante" target="uc2">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="aluno" target="uc3">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="aluno" target="uc4">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="aluno" target="uc5">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="professor" target="uc6">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="uc1" target="google">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="uc2" target="google">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="" style="endArrow=none;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;" edge="1" parent="1" source="uc4" target="compilador">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e16" value="" style="endArrow=block;endFill=0;endSize=14;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=24;entryPerimeter=0;" edge="1" parent="1" source="professor" target="aluno">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e17" value="«extend»" style="endArrow=open;endSize=10;dashed=1;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc3" target="uc4">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="e18" value="«include»" style="endArrow=open;endSize=10;dashed=1;html=0;labelBackgroundColor=#FFFFFF;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc5" target="uc6">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
